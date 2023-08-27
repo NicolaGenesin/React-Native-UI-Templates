@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,10 +6,12 @@ import {
   StatusBar,
   ImageBackground,
   useWindowDimensions,
-  ScrollView,
+  Image,
   Platform,
   Animated,
   Easing,
+  FlatList,
+  ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -17,10 +19,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import MyPressable from '../components/MyPressable';
 import { AppImages } from '../assets';
 import Config from '../Config';
+import { FMSetlist, FMSongEntity } from './model/types';
+import moment from 'moment';
 
 const infoHeight = 364.0;
 
-const CourseInfoScreen: React.FC = () => {
+const CourseInfoScreen: React.FC = props => {
   const window = useWindowDimensions();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -30,10 +34,93 @@ const CourseInfoScreen: React.FC = () => {
   const opacity2 = useRef<Animated.Value>(new Animated.Value(0));
   const opacity3 = useRef<Animated.Value>(new Animated.Value(0));
 
+  const setlist: FMSetlist = props.route.params.setlist;
+  const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
+
   // const tempHeight = window.height - window.width / 1.2 + 24.0;
   const marginTop = Config.isIos
     ? Math.max(insets.top, 20)
     : StatusBar.currentHeight;
+
+  const compareWithSpotify = async (
+    songs: FMSongEntity[],
+    artist: string,
+    accessToken: string,
+  ) => {
+    try {
+      for (const song of songs) {
+        const query = `${song.name} ${artist}`;
+        const searchResponse = await fetch(
+          `https://api.spotify.com/v1/search?q=${encodeURIComponent(
+            query,
+          )}&type=track`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+
+        if (searchResponse.ok) {
+          const searchResult = await searchResponse.json();
+          const trackId = searchResult.tracks.items[0]?.id;
+          const trackImageUrl =
+            searchResult.tracks.items[0]?.album?.images?.[1].url;
+
+          // enrich song with spotify data
+          song.spotifyId = trackId;
+          song.spotifyImageUrl = trackImageUrl;
+
+          // console.log(query, trackId, trackImageUrl);
+          // if (trackId) {
+          //   addTrackToPlaylist(trackId);
+          // } else {
+          //   console.warn(`No track found for ${song.name}`);
+          // }
+        } else {
+          console.error('Error searching for track', searchResponse);
+        }
+      }
+
+      console.log('Setlist added to playlist');
+      // } else {
+      //   console.error('Error creating playlist 1');
+      // }
+    } catch (error) {
+      console.error('Error creating playlist 2', error);
+    }
+
+    console.log('here');
+
+    setAllSongs(songs);
+  };
+
+  console.log('allsongszdd', allSongs);
+
+  useEffect(() => {
+    if (setlist) {
+      const allSongsTmp: FMSongEntity[] = [];
+
+      (setlist.sets.set || []).forEach(section => {
+        if (section.song) {
+          section.song.forEach(song => {
+            if (song.name) {
+              allSongsTmp.push({
+                name: song.name,
+                encore: !!section.encore,
+              });
+            }
+          });
+        }
+      });
+
+      compareWithSpotify(
+        allSongsTmp,
+        setlist.artist.name,
+        props.route.params.accessToken, // todo this needs to change, we want to let people login from the detail page
+      );
+    }
+  }, [setlist]);
 
   useEffect(() => {
     Animated.timing(favIconScale.current, {
@@ -65,97 +152,121 @@ const CourseInfoScreen: React.FC = () => {
     ]).start();
   }, []);
 
-  const getTimeBoxUI = (text1: string, text2: string) => (
-    <View style={styles.timeBoxContainer}>
-      <Text style={[styles.textStyle, styles.timeBoxTitle]}>{text1}</Text>
-      <Text style={[styles.textStyle, { fontSize: 14 }]}>{text2}</Text>
-    </View>
-  );
-
   return (
     <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="transparent" barStyle="dark-content" />
-      <ImageBackground
-        style={{ flex: 1 }}
-        imageStyle={{ height: window.width / 1.2 }}
-        source={AppImages.webInterFace}
-      >
-        <View
-          style={[
-            styles.contentContainer,
-            { marginTop: window.width / 1.2 - 24 },
-          ]}
+      <View style={[styles.contentContainer]}>
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={{
+            flexGrow: 1,
+            minHeight: infoHeight,
+            // maxHeight: tempHeight > infoHeight ? tempHeight : infoHeight,
+          }}
         >
-          <ScrollView
-            style={styles.scrollContainer}
-            contentContainerStyle={{
-              flexGrow: 1,
-              minHeight: infoHeight,
-              // maxHeight: tempHeight > infoHeight ? tempHeight : infoHeight,
+          <ImageBackground
+            source={{
+              uri: 'https://e1.pxfuel.com/desktop-wallpaper/150/709/desktop-wallpaper-placebo-high-quality-placebo.jpg',
             }}
+            style={styles.imageBackground}
+            imageStyle={{ opacity: 0.15 }}
           >
-            <Text style={styles.courseTitle}>{'Web Design\nCourse'}</Text>
-            <View style={styles.priceRatingContainer}>
-              <Text style={[styles.textStyle, styles.price]}>$28.99</Text>
-              <Text style={styles.textStyle}>4.3</Text>
-              <Icon name="star" size={24} color="rgb(0, 182, 240)" />
+            <Text style={styles.title}>
+              {setlist.artist.name.toUpperCase()}
+            </Text>
+            {/* <View style={styles.priceRatingContainer}></View> */}
+            <Text style={styles.venue}>
+              {setlist.venue.name}
+              {/* - {setlist.venue.city.name} */}
+            </Text>
+            <Text style={styles.time}>
+              {moment(setlist.eventDate, 'DD-MM-YYYY').format('MMM DD, YYYY')}
+            </Text>
+            <View style={styles.durationAvailabilityContainer}>
+              <View style={styles.durationContainer}>
+                <Text style={styles.durationTitle}>DURATION</Text>
+                <Text style={styles.durationContent}>1h 8m</Text>
+              </View>
+              <View style={styles.availabilityContainer}>
+                <Text style={styles.availabilityTitle}>TRACK AVAILABILITY</Text>
+                <Text style={styles.availabilityContent}>
+                  All tracks are available
+                </Text>
+              </View>
             </View>
-            <Animated.View
-              style={[styles.boxesContainer, { opacity: opacity1.current }]}
-              renderToHardwareTextureAndroid // just to avoid UI glitch when animating view with elevation
-            >
-              {getTimeBoxUI('24', 'Classes')}
-              {getTimeBoxUI('2 hours', 'Time')}
-              {getTimeBoxUI('24', 'Seat')}
-            </Animated.View>
-            <Animated.Text
-              style={[styles.courseDescription, { opacity: opacity2.current }]}
-              numberOfLines={3}
-            >
-              Lorem ipsum is simply dummy text of printing & typesetting
-              industry, Lorem ipsum is simply dummy text of printing &
-              typesetting industry.
-            </Animated.Text>
-          </ScrollView>
+            {!!setlist.tour.name && (
+              <Animated.Text style={styles.tour}>
+                TOUR: {setlist.tour.name.toUpperCase()}
+              </Animated.Text>
+            )}
+          </ImageBackground>
+          <Text style={styles.setlistTitle}>SETLIST</Text>
+
           <Animated.View
-            style={[
-              styles.footerContainer,
-              { paddingBottom: insets.bottom + 16, opacity: opacity3.current },
-            ]}
+            style={[styles.listContainer, { opacity: opacity1.current }]}
             renderToHardwareTextureAndroid
           >
-            <View style={styles.addView}>
-              <Icon name="add" size={28} color="rgb(0, 182, 240)" />
-            </View>
-            <View style={{ width: 16 }} />
-            <View style={styles.joinCourse}>
-              <MyPressable>
-                <Text style={styles.joinCourseText}>Join Course</Text>
-              </MyPressable>
-            </View>
+            <FlatList
+              data={allSongs}
+              keyExtractor={item => item.name}
+              renderItem={({ item, index }) => {
+                return (
+                  <View style={styles.itemContainer}>
+                    <View>
+                      <Image
+                        style={{ height: 40, width: 40, marginEnd: 8 }}
+                        source={{
+                          uri:
+                            item.spotifyImageUrl ||
+                            'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
+                        }}
+                        resizeMode="stretch"
+                      />
+                      <View style={styles.trackIndexContainer}>
+                        <Text style={styles.trackIndex}>{index + 1}</Text>
+                      </View>
+                    </View>
+                    <View>
+                      <View style={styles.itemNameContainer}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        {item.encore && (
+                          <View style={styles.tagContainer}>
+                            <Text style={styles.tagText}>ENCORE</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.albumName}>Album Name</Text>
+                    </View>
+                  </View>
+                );
+              }}
+            />
           </Animated.View>
-        </View>
-
+        </ScrollView>
         <Animated.View
           style={[
-            styles.favoriteIcon,
-            {
-              top: window.width / 1.2 - 24 - 35,
-              transform: [{ scale: favIconScale.current }],
-            },
+            styles.footerContainer,
+            { paddingBottom: insets.bottom + 16, opacity: opacity3.current },
           ]}
+          renderToHardwareTextureAndroid
         >
-          <Icon name="favorite" size={28} color="white" />
+          <View style={styles.joinCourse}>
+            <MyPressable>
+              <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
+            </MyPressable>
+          </View>
         </Animated.View>
+      </View>
 
+      <View style={[styles.backBtnContainer, { marginTop }]}>
         <MyPressable
-          style={[styles.backBtn, { marginTop }]}
+          style={[]}
           android_ripple={{ color: 'darkgrey', borderless: true, radius: 28 }}
           onPress={() => navigation.goBack()}
         >
           <Icon name="arrow-back-ios" size={24} color="black" />
         </MyPressable>
-      </ImageBackground>
+      </View>
     </View>
   );
 };
@@ -177,21 +288,85 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 32,
     paddingHorizontal: 8,
   },
-  courseTitle: {
+  title: {
     color: 'black',
     fontSize: 22,
-    fontFamily: 'WorkSans-SemiBold',
-    letterSpacing: 0.27,
-    paddingTop: 32,
-    paddingLeft: 18,
-    paddingRight: 16,
+    marginTop: 32,
+    fontWeight: 'bold',
   },
-  priceRatingContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 8,
+  venue: {
+    color: 'gray',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  time: {
+    color: 'gray',
+    fontSize: 14,
+  },
+  tour: {
+    color: 'gray',
+    fontSize: 10,
+    marginBottom: 8,
+  },
+  setlistTitle: {
+    color: 'gray',
+    fontSize: 16,
+    marginTop: 16,
+    fontWeight: 'bold',
+  },
+  trackIndexContainer: {
+    position: 'absolute',
+    backgroundColor: 'black',
+    width: 20,
+    height: 20,
     alignItems: 'center',
+    justifyContent: 'center',
+  },
+  trackIndex: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: 'white',
+  },
+  listContainer: { marginTop: 8 },
+  itemContainer: {
+    flexDirection: 'row',
+    paddingVertical: 4,
+    alignItems: 'center',
+  },
+  itemNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  durationContainer: { marginRight: 8 },
+  durationTitle: { color: 'gray', fontSize: 12, fontWeight: 'bold' },
+  durationContent: { color: 'black', fontSize: 16, fontWeight: 'bold' },
+  availabilityContainer: { marginRight: 8 },
+  availabilityTitle: { color: 'gray', fontSize: 12, fontWeight: 'bold' },
+  availabilityContent: { color: 'black', fontSize: 16, fontWeight: 'bold' },
+  durationAvailabilityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 8,
+  },
+  itemName: {
+    marginRight: 4,
+    fontWeight: 'bold',
+  },
+  albumName: {
+    marginRight: 4,
+    color: 'gray',
+  },
+  tagContainer: {
+    backgroundColor: '#007bff', // Blue color
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 16,
+    alignSelf: 'flex-start',
+  },
+  tagText: {
+    color: 'white', // White text color
+    fontSize: 8,
+    fontWeight: 'bold',
   },
   price: {
     flex: 1,
@@ -199,41 +374,8 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     fontSize: 22,
-    fontFamily: 'WorkSans-Regular',
     color: 'darkslategrey',
     letterSpacing: 0.27,
-  },
-  timeBoxContainer: {
-    backgroundColor: 'white',
-    borderRadius: 16,
-    alignItems: 'center',
-    margin: 8,
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    elevation: 2,
-    shadowColor: 'grey',
-    shadowOffset: { width: 1.1, height: 1.1 },
-    shadowOpacity: 0.22,
-    shadowRadius: 8.0,
-  },
-  timeBoxTitle: {
-    fontSize: 14,
-    fontFamily: 'WorkSans-SemiBold',
-    color: 'rgb(0, 182, 240)',
-  },
-  boxesContainer: {
-    flexDirection: 'row',
-    padding: 8,
-  },
-  courseDescription: {
-    flex: 1,
-    fontSize: 14,
-    fontFamily: 'WorkSans-Regular',
-    textAlign: 'justify',
-    color: 'darkslategrey',
-    letterSpacing: 0.27,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
   },
   footerContainer: {
     flexDirection: 'row',
@@ -260,11 +402,10 @@ const styles = StyleSheet.create({
     shadowRadius: 10.0,
     ...Platform.select({ android: { overflow: 'hidden' } }),
   },
-  joinCourseText: {
+  saveSetlistText: {
     padding: 18,
     paddingVertical: 12,
     fontSize: 18,
-    fontFamily: 'WorkSans-SemiBold',
     alignSelf: 'center',
     color: 'white',
   },
@@ -283,14 +424,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.34,
     shadowRadius: 6.27,
   },
-  backBtn: {
+  backBtnContainer: {
     position: 'absolute',
-    width: 56,
-    height: 56,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
+    height: 32,
+    // backgroundColor: 'yellow',
   },
+  imageBackground: {},
 });
 
 export default CourseInfoScreen;

@@ -14,6 +14,7 @@ import { CourseInfoScreen, HomeDesignCourse } from './design_course';
 import { IntroductionAnimationScreen } from './introduction_animation';
 import HotelHomeScreen from './hotel_booking/HotelHomeScreen';
 import HotelHomeScreen2 from './music/HotelHomeScreen';
+import { CourseInfoScreen as CourseInfoScreen2 } from './design_course';
 
 const Drawer = createDrawerNavigator();
 /**
@@ -77,7 +78,10 @@ export default () => {
           name="onBoarding"
           component={IntroductionAnimationScreen}
         />
-        <Stack.Screen name="music" component={HotelHomeScreen2} />
+        <Stack.Group>
+          <Stack.Screen name="music" component={HotelHomeScreen2} />
+          <Stack.Screen name="CourseInfo2" component={CourseInfoScreen2} />
+        </Stack.Group>
       </Stack.Navigator>
     </>
   );
