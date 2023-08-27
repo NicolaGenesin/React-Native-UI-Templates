@@ -95,7 +95,7 @@ const HotelHomeScreen: React.FC = () => {
         <HotelListItem {...{ data }} />
       ) : (
         <View style={styles.stickyHeaderContainer}>
-          <Text style={styles.hotelCountText}>532 hotels found</Text>
+          <Text style={styles.hotelCountText}>531 hotels found</Text>
           <View style={{ borderRadius: 4, overflow: 'hidden' }}>
             <MyPressable
               style={{ flexDirection: 'row', padding: 8 }}

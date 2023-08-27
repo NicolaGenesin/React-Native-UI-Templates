@@ -13,6 +13,7 @@ import {
 import { CourseInfoScreen, HomeDesignCourse } from './design_course';
 import { IntroductionAnimationScreen } from './introduction_animation';
 import HotelHomeScreen from './hotel_booking/HotelHomeScreen';
+import HotelHomeScreen2 from './music/HotelHomeScreen';
 
 const Drawer = createDrawerNavigator();
 /**
@@ -76,6 +77,7 @@ export default () => {
           name="onBoarding"
           component={IntroductionAnimationScreen}
         />
+        <Stack.Screen name="music" component={HotelHomeScreen2} />
       </Stack.Navigator>
     </>
   );

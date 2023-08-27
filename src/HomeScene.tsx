@@ -33,9 +33,9 @@ const DEMOS = [
     screenName: 'Hotel',
   },
   {
-    name: 'fitness_app',
+    name: 'music',
     background: AppImages.fitness_app,
-    screenName: '',
+    screenName: 'music',
   },
   {
     name: 'design_course',
