@@ -17,12 +17,28 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MyPressable from '../components/MyPressable';
-import { AppImages } from '../assets';
 import Config from '../Config';
 import { FMSetlist, FMSongEntity } from './model/types';
 import moment from 'moment';
 
 const infoHeight = 364.0;
+
+const formatTime = (seconds: number): string => {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  let formattedTime = '';
+
+  if (hours > 0) {
+    formattedTime += `${hours}h `;
+  }
+
+  if (minutes > 0 || hours === 0) {
+    formattedTime += `${minutes}m`;
+  }
+
+  return formattedTime;
+};
 
 const CourseInfoScreen: React.FC = props => {
   const window = useWindowDimensions();
@@ -64,12 +80,18 @@ const CourseInfoScreen: React.FC = props => {
         if (searchResponse.ok) {
           const searchResult = await searchResponse.json();
           const trackId = searchResult.tracks.items[0]?.id;
+          const durationInSeconds =
+            searchResult.tracks.items[0]?.duration_ms / 1000;
           const trackImageUrl =
             searchResult.tracks.items[0]?.album?.images?.[1].url;
+
+          // console.log(JSON.stringify(searchResult.tracks.items[0], null, 2));
 
           // enrich song with spotify data
           song.spotifyId = trackId;
           song.spotifyImageUrl = trackImageUrl;
+          song.spotifyAlbumName = searchResult.tracks.items[0]?.album?.name;
+          song.duration = durationInSeconds;
 
           // console.log(query, trackId, trackImageUrl);
           // if (trackId) {
@@ -95,7 +117,7 @@ const CourseInfoScreen: React.FC = props => {
     setAllSongs(songs);
   };
 
-  console.log('allsongszdd', allSongs);
+  // console.log('allsongszdd', allSongs);
 
   useEffect(() => {
     if (setlist) {
@@ -152,10 +174,52 @@ const CourseInfoScreen: React.FC = props => {
     ]).start();
   }, []);
 
+  const spotifySongsFound = allSongs.filter(song => !!song.spotifyId);
+
   return (
     <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="transparent" barStyle="dark-content" />
       <View style={[styles.contentContainer]}>
+        <View
+          style={[
+            styles.header,
+            { height: 52 + insets.top, paddingTop: insets.top },
+          ]}
+        >
+          <View style={styles.headerLeft}>
+            <MyPressable
+              style={{ padding: 8 }}
+              android_ripple={{ color: 'grey', radius: 20, borderless: true }}
+              onPress={navigation.goBack}
+            >
+              <Icon name="arrow-back" size={25} color="black" />
+            </MyPressable>
+          </View>
+          <View
+            style={{
+              marginHorizontal: 16,
+              maxWidth: window.width - 16 - 32 - 41 - 74, // 16, 32:- total padding/margin; 41, 74:- left and right view's width
+            }}
+          >
+            <Text style={styles.headerTitle} numberOfLines={1}>
+              {setlist.artist.name.toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.headerRight}>
+            {/* <Icon
+              style={{ paddingRight: 8 }}
+              name="favorite-border"
+              size={25}
+              color="black"
+            /> */}
+            <Icon
+              style={{ paddingHorizontal: 8 }}
+              name="ios-share"
+              size={25}
+              color="black"
+            />
+          </View>
+        </View>
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={{
@@ -166,39 +230,59 @@ const CourseInfoScreen: React.FC = props => {
         >
           <ImageBackground
             source={{
-              uri: 'https://e1.pxfuel.com/desktop-wallpaper/150/709/desktop-wallpaper-placebo-high-quality-placebo.jpg',
+              uri: 'https://www.rollingstone.co.uk/wp-content/uploads/sites/2/2022/01/PLACEBO_PRESS.01-Credit-Mads-Perch-1024x451.jpg',
             }}
             style={styles.imageBackground}
-            imageStyle={{ opacity: 0.15 }}
+            resizeMode="cover"
+            imageStyle={{ opacity: 0.55 }}
           >
-            <Text style={styles.title}>
-              {setlist.artist.name.toUpperCase()}
-            </Text>
-            {/* <View style={styles.priceRatingContainer}></View> */}
-            <Text style={styles.venue}>
-              {setlist.venue.name}
-              {/* - {setlist.venue.city.name} */}
-            </Text>
-            <Text style={styles.time}>
-              {moment(setlist.eventDate, 'DD-MM-YYYY').format('MMM DD, YYYY')}
-            </Text>
-            <View style={styles.durationAvailabilityContainer}>
-              <View style={styles.durationContainer}>
-                <Text style={styles.durationTitle}>DURATION</Text>
-                <Text style={styles.durationContent}>1h 8m</Text>
-              </View>
-              <View style={styles.availabilityContainer}>
-                <Text style={styles.availabilityTitle}>TRACK AVAILABILITY</Text>
-                <Text style={styles.availabilityContent}>
-                  All tracks are available
+            <ImageBackground
+              source={require('../detail-dots.png')}
+              style={styles.imageBackground}
+              resizeMode="stretch"
+              imageStyle={{ opacity: 12 }}
+            >
+              <View style={styles.topSectionContainer}>
+                {/* <Text style={styles.title}>
+                  {setlist.artist.name.toUpperCase()}
+                </Text> */}
+                {/* <View style={styles.priceRatingContainer}></View> */}
+                <Text style={styles.venue}>
+                  {setlist.venue.name}
+                  {/* - {setlist.venue.city.name} */}
                 </Text>
+                <Text style={styles.time}>
+                  {moment(setlist.eventDate, 'DD-MM-YYYY').format(
+                    'MMM DD, YYYY',
+                  )}
+                </Text>
+                <View style={styles.durationAvailabilityContainer}>
+                  <View style={styles.durationContainer}>
+                    <Text style={styles.durationTitle}>DURATION</Text>
+                    <Text style={styles.durationContent}>
+                      {formatTime(
+                        allSongs.reduce((acc, song) => {
+                          return acc + (song.duration || 0);
+                        }, 0),
+                      )}
+                    </Text>
+                  </View>
+                  <View style={styles.availabilityContainer}>
+                    <Text style={styles.availabilityTitle}>
+                      TRACK AVAILABILITY
+                    </Text>
+                    <Text style={styles.availabilityContent}>
+                      {spotifySongsFound.length}/{allSongs.length}
+                    </Text>
+                  </View>
+                </View>
+                {!!setlist.tour.name && (
+                  <Animated.Text style={styles.tour}>
+                    TOUR: {setlist.tour.name.toUpperCase()}
+                  </Animated.Text>
+                )}
               </View>
-            </View>
-            {!!setlist.tour.name && (
-              <Animated.Text style={styles.tour}>
-                TOUR: {setlist.tour.name.toUpperCase()}
-              </Animated.Text>
-            )}
+            </ImageBackground>
           </ImageBackground>
           <Text style={styles.setlistTitle}>SETLIST</Text>
 
@@ -235,7 +319,9 @@ const CourseInfoScreen: React.FC = props => {
                           </View>
                         )}
                       </View>
-                      <Text style={styles.albumName}>Album Name</Text>
+                      <Text style={styles.albumName}>
+                        {item.spotifyAlbumName}
+                      </Text>
                     </View>
                   </View>
                 );
@@ -244,13 +330,10 @@ const CourseInfoScreen: React.FC = props => {
           </Animated.View>
         </ScrollView>
         <Animated.View
-          style={[
-            styles.footerContainer,
-            { paddingBottom: insets.bottom + 16, opacity: opacity3.current },
-          ]}
+          style={[styles.footerContainer]}
           renderToHardwareTextureAndroid
         >
-          <View style={styles.joinCourse}>
+          <View style={styles.saveSetlistButton}>
             <MyPressable>
               <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
             </MyPressable>
@@ -258,7 +341,7 @@ const CourseInfoScreen: React.FC = props => {
         </Animated.View>
       </View>
 
-      <View style={[styles.backBtnContainer, { marginTop }]}>
+      {/* <View style={[styles.backBtnContainer, { marginTop }]}>
         <MyPressable
           style={[]}
           android_ripple={{ color: 'darkgrey', borderless: true, radius: 28 }}
@@ -266,7 +349,7 @@ const CourseInfoScreen: React.FC = props => {
         >
           <Icon name="arrow-back-ios" size={24} color="black" />
         </MyPressable>
-      </View>
+      </View> */}
     </View>
   );
 };
@@ -283,36 +366,33 @@ const styles = StyleSheet.create({
     shadowRadius: 10.0,
     elevation: 16,
   },
-  scrollContainer: {
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingHorizontal: 8,
-  },
-  title: {
-    color: 'black',
-    fontSize: 22,
-    marginTop: 32,
-    fontWeight: 'bold',
-  },
+  topSectionContainer: { paddingHorizontal: 16, paddingVertical: 16 },
+  scrollContainer: {},
+  // title: {
+  //   color: 'black',
+  //   fontSize: 22,
+  //   marginTop: 32,
+  //   fontWeight: 'bold',
+  // },
   venue: {
-    color: 'gray',
+    color: 'black',
     fontWeight: 'bold',
     fontSize: 18,
   },
   time: {
-    color: 'gray',
+    color: 'black',
     fontSize: 14,
   },
   tour: {
     color: 'gray',
     fontSize: 10,
-    marginBottom: 8,
   },
   setlistTitle: {
     color: 'gray',
     fontSize: 16,
     marginTop: 16,
     fontWeight: 'bold',
+    paddingHorizontal: 16,
   },
   trackIndexContainer: {
     position: 'absolute',
@@ -327,7 +407,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: 'white',
   },
-  listContainer: { marginTop: 8 },
+  listContainer: { marginTop: 8, paddingHorizontal: 16 },
   itemContainer: {
     flexDirection: 'row',
     paddingVertical: 4,
@@ -338,11 +418,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   durationContainer: { marginRight: 8 },
-  durationTitle: { color: 'gray', fontSize: 12, fontWeight: 'bold' },
-  durationContent: { color: 'black', fontSize: 16, fontWeight: 'bold' },
+  durationTitle: { color: '#333', fontSize: 12, fontWeight: 'bold' },
+  durationContent: { color: 'black', fontSize: 24, fontWeight: 'bold' },
   availabilityContainer: { marginRight: 8 },
-  availabilityTitle: { color: 'gray', fontSize: 12, fontWeight: 'bold' },
-  availabilityContent: { color: 'black', fontSize: 16, fontWeight: 'bold' },
+  availabilityTitle: { color: '#333', fontSize: 12, fontWeight: 'bold' },
+  availabilityContent: { color: 'black', fontSize: 24, fontWeight: 'bold' },
   durationAvailabilityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -378,6 +458,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.27,
   },
   footerContainer: {
+    position: 'absolute',
+    bottom: 16,
     flexDirection: 'row',
     paddingHorizontal: 24,
     // paddingBottom: 16,
@@ -391,15 +473,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  joinCourse: {
+  saveSetlistButton: {
     flex: 1,
-    borderRadius: 16,
-    backgroundColor: 'rgb(0, 182, 240)',
+    borderRadius: 8,
+    backgroundColor: '#489',
     elevation: 4,
-    shadowColor: 'rgb(0, 182, 240)',
-    shadowOffset: { width: 1.1, height: 1.1 },
-    shadowOpacity: 0.5,
-    shadowRadius: 10.0,
     ...Platform.select({ android: { overflow: 'hidden' } }),
   },
   saveSetlistText: {
@@ -431,6 +509,31 @@ const styles = StyleSheet.create({
     // backgroundColor: 'yellow',
   },
   imageBackground: {},
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    paddingHorizontal: 8,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'lightgrey',
+  },
+  headerLeft: {
+    alignItems: 'flex-start',
+    flexGrow: 1,
+    flexBasis: 0,
+  },
+  headerTitle: {
+    color: 'black',
+    fontSize: 22,
+    fontFamily: 'WorkSans-SemiBold',
+    textAlign: 'center',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    flexGrow: 1,
+    flexBasis: 0,
+  },
 });
 
 export default CourseInfoScreen;
