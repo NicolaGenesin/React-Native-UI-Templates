@@ -1,64 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button, FlatList, Linking } from 'react-native';
-import { authorize } from 'react-native-app-auth';
 import { useNavigation } from '@react-navigation/native';
+import MyPressable from '../components/MyPressable';
 
-const SpotifyPlaylist: React.FC = () => {
+const SetlistsSearchScreen: React.FC = () => {
   const navigation = useNavigation<any>();
-  const [accessToken, setAccessToken] = useState<string>('');
   const [playlistId, setPlaylistId] = useState<string>('');
   const [setlists, setSetlists] = useState<any[]>([]);
 
-  console.log('accesstok', accessToken);
-
-  const config = {
-    clientId: 'b026c2aa14e34e3f92aed1b4de111ca2',
-    clientSecret: '296cd1ea8bae48e28198bff673cf5f5c',
-    redirectUrl: 'setlistify:/oauth',
-    scopes: ['playlist-modify-public', 'playlist-modify-private'],
-    serviceConfiguration: {
-      authorizationEndpoint: 'https://accounts.spotify.com/authorize',
-      tokenEndpoint: 'https://accounts.spotify.com/api/token',
-    },
-  };
-
   const apiKey = 'Y9sBv3Zzx7gxuYRlgxWDSXGYPytvfzdW0Fzo';
-  const searchQuery = 'Placebo';
-
-  useEffect(() => {
-    console.log('a');
-    const handleUrl = async url => {
-      console.log('b');
-      // Check if the URL matches your custom URL scheme
-      if (url.startsWith('setlistify://oauthredirect')) {
-        console.log('c');
-        // Parse the URL to extract any relevant information (e.g., tokens)
-        // Handle the data as needed (e.g., complete the authentication process)
-      }
-    };
-
-    // Add a listener for URL changes
-    const subscription = Linking.addEventListener('url', event => {
-      handleUrl(event.url);
-    });
-
-    // Clean up the listener when the component unmounts
-    return () => {
-      subscription.remove();
-    };
-  }, []);
-
-  const authorizeSpotify = async () => {
-    try {
-      const result = await authorize(config);
-
-      console.log(result);
-
-      setAccessToken(result.accessToken);
-    } catch (error) {
-      console.error('Spotify Authorization Error', error);
-    }
-  };
+  const searchQuery = 'Tool';
 
   const searchSetlists = async () => {
     try {
@@ -179,32 +130,31 @@ const SpotifyPlaylist: React.FC = () => {
 
   return (
     <>
-      <Button title="Authorize Spotify" onPress={authorizeSpotify} />
-      <Button title="Search Setlists" onPress={searchSetlists} />
+      <View style={{ marginTop: 24 }}>
+        <Button title="Search Setlists" onPress={searchSetlists} />
+      </View>
 
       <FlatList
         data={setlists}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
-          <View>
+          <MyPressable
+            style={{ marginTop: 8 }}
+            onPress={() => {
+              console.log(JSON.stringify(item, null, 2));
+
+              navigation.navigate('SetlistDetailScreen', {
+                setlist: item,
+              });
+            }}
+          >
             <Text>{item.eventDate}</Text>
             <Text>{item.artist.name}</Text>
-            <Button
-              title="Open Playlist"
-              onPress={() => {
-                navigation.navigate('CourseInfo', {
-                  setlist: item,
-                  accessToken: accessToken,
-                });
-
-                // openPlaylist(item);
-              }}
-            />
-          </View>
+          </MyPressable>
         )}
       />
     </>
   );
 };
 
-export default SpotifyPlaylist;
+export default SetlistsSearchScreen;

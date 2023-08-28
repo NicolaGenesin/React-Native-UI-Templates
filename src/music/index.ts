@@ -1,1 +1,1 @@
-export { default as HotelHomeScreen } from './HotelHomeScreen';
+export { default as HotelHomeScreen } from './SetlistsSearchScreen';

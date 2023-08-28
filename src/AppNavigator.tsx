@@ -10,11 +10,17 @@ import {
   FeedbackScene,
   InviteFriendScene,
 } from '.';
-import { CourseInfoScreen, HomeDesignCourse } from './design_course';
+// import {
+//   CourseInfoScreen,
+//   HomeDesignCourse,
+//   SetlistDetailScreen,
+// } from './design_course';
 import { IntroductionAnimationScreen } from './introduction_animation';
 import HotelHomeScreen from './hotel_booking/HotelHomeScreen';
-import HotelHomeScreen2 from './music/HotelHomeScreen';
-import { CourseInfoScreen as CourseInfoScreen2 } from './design_course';
+import HotelHomeScreen2 from './music/SetlistsSearchScreen';
+import WelcomeScreen from './music/WelcomeScreen';
+import SetlistDetailScreen from './music/SetlistDetailScreen';
+import SetlistsSearchScreen from './music/SetlistsSearchScreen';
 
 const Drawer = createDrawerNavigator();
 /**
@@ -69,18 +75,20 @@ export default () => {
 
         <Stack.Screen name="Hotel" component={HotelHomeScreen} />
 
-        <Stack.Group>
-          <Stack.Screen name="DesignCourse" component={HomeDesignCourse} />
-          <Stack.Screen name="CourseInfo" component={CourseInfoScreen} />
-        </Stack.Group>
-
         <Stack.Screen
           name="onBoarding"
           component={IntroductionAnimationScreen}
         />
         <Stack.Group>
-          <Stack.Screen name="music" component={HotelHomeScreen2} />
-          <Stack.Screen name="CourseInfo2" component={CourseInfoScreen2} />
+          <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+          <Stack.Screen
+            name="SetlistsSearchScreen"
+            component={SetlistsSearchScreen}
+          />
+          <Stack.Screen
+            name="SetlistDetailScreen"
+            component={SetlistDetailScreen}
+          />
         </Stack.Group>
       </Stack.Navigator>
     </>

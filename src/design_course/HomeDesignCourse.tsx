@@ -87,7 +87,7 @@ const HomeDesignCourse: React.FC = () => {
         renderItem={data => (
           <CategoryListView
             {...{ data }}
-            onScreenClicked={() => navigation.navigate('CourseInfo')}
+            onScreenClicked={() => navigation.navigate('SetlistDetailScreen')}
           />
         )}
         keyExtractor={item => item.id.toString()}
@@ -124,7 +124,7 @@ const HomeDesignCourse: React.FC = () => {
         renderItem={data => (
           <PopulerCourseListView
             {...{ data }}
-            onScreenClicked={() => navigation.navigate('CourseInfo')}
+            onScreenClicked={() => navigation.navigate('SetlistDetailScreen')}
           />
         )}
         keyExtractor={item => item.id.toString()}

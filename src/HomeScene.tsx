@@ -22,26 +22,26 @@ import { AppImages } from './assets';
 import { showToast } from './util/action';
 
 const DEMOS = [
+  // {
+  //   name: 'onBoarding',
+  //   background: AppImages.introduction_animation,
+  //   screenName: 'onBoarding',
+  // },
+  // {
+  //   name: 'hotel',
+  //   background: AppImages.hotel_booking,
+  //   screenName: 'Hotel',
+  // },
   {
-    name: 'onBoarding',
-    background: AppImages.introduction_animation,
-    screenName: 'onBoarding',
-  },
-  {
-    name: 'hotel',
-    background: AppImages.hotel_booking,
-    screenName: 'Hotel',
-  },
-  {
-    name: 'music',
+    name: 'SetlistsSearchScreen',
     background: AppImages.fitness_app,
-    screenName: 'music',
+    screenName: 'SetlistsSearchScreen',
   },
-  {
-    name: 'design_course',
-    background: AppImages.design_course,
-    screenName: 'DesignCourse',
-  },
+  // {
+  //   name: 'design_course',
+  //   background: AppImages.design_course,
+  //   screenName: 'DesignCourse',
+  // },
 ];
 
 interface ListItemProps {

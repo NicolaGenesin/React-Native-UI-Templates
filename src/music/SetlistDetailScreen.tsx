@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MyPressable from '../components/MyPressable';
 import Config from '../Config';
-import { FMSetlist, FMSongEntity } from './model/types';
+import { FMSetlist, FMSongEntity } from '../design_course/model/types';
 import moment from 'moment';
 
 const infoHeight = 364.0;
@@ -40,7 +40,7 @@ const formatTime = (seconds: number): string => {
   return formattedTime;
 };
 
-const CourseInfoScreen: React.FC = props => {
+const SetlistDetailScreen: React.FC = props => {
   const window = useWindowDimensions();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -52,11 +52,6 @@ const CourseInfoScreen: React.FC = props => {
 
   const setlist: FMSetlist = props.route.params.setlist;
   const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
-
-  // const tempHeight = window.height - window.width / 1.2 + 24.0;
-  const marginTop = Config.isIos
-    ? Math.max(insets.top, 20)
-    : StatusBar.currentHeight;
 
   const compareWithSpotify = async (
     songs: FMSongEntity[],
@@ -276,7 +271,7 @@ const CourseInfoScreen: React.FC = props => {
                     </Text>
                   </View>
                 </View>
-                {!!setlist.tour.name && (
+                {!!setlist.tour?.name && (
                   <Animated.Text style={styles.tour}>
                     TOUR: {setlist.tour.name.toUpperCase()}
                   </Animated.Text>
@@ -536,4 +531,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CourseInfoScreen;
+export default SetlistDetailScreen;
