@@ -4,7 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const config = {
   clientId: 'b026c2aa14e34e3f92aed1b4de111ca2',
   redirectUrl: 'setlistify:/oauth',
-  scopes: ['playlist-modify-public', 'playlist-modify-private'],
+  scopes: [
+    'playlist-modify-public',
+    'playlist-modify-private',
+    'ugc-image-upload',
+  ],
   serviceConfiguration: {
     authorizationEndpoint: 'https://accounts.spotify.com/authorize',
     tokenEndpoint: 'https://accounts.spotify.com/api/token',

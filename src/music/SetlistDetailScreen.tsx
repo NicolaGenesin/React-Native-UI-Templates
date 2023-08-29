@@ -19,8 +19,9 @@ import {
   SpotifyArtist,
 } from '../design_course/model/types';
 import moment from 'moment';
-import { searchSongsOnSpotify } from '../util/network';
+import { savePlaylistOnSpotify, searchSongsOnSpotify } from '../util/network';
 import TopNavigation from './TopNavigation';
+import { handleLogin, retrieveTokens } from '../util/auth';
 
 const infoHeight = 364.0;
 
@@ -238,7 +239,28 @@ const SetlistDetailScreen: React.FC = props => {
           renderToHardwareTextureAndroid
         >
           <View style={styles.saveSetlistButton}>
-            <MyPressable>
+            <MyPressable
+              onPress={async () => {
+                await handleLogin();
+
+                const spotifySongIds = allSongs
+                  .map(song => song.spotifyData?.id)
+                  .filter(id => !!id);
+
+                await savePlaylistOnSpotify(
+                  spotifySongIds,
+                  artist.name +
+                    ' at ' +
+                    setlist.venue.name +
+                    ', ' +
+                    setlist.eventDate,
+                  artist.images?.[0]?.url,
+                  artist.name,
+                  setlist.venue.name,
+                  setlist.eventDate,
+                );
+              }}
+            >
               <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
             </MyPressable>
           </View>

@@ -44,7 +44,7 @@ const SetlistsSearchScreen: React.FC = props => {
               });
             }}
           >
-            <Text>{item.artist.name}</Text>
+            <Text>{item.venue.name}</Text>
             <Text>{item.eventDate}</Text>
           </MyPressable>
         )}
