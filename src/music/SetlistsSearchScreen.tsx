@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import MyPressable from '../components/MyPressable';
 import { searchArtistSetlistsOnFM } from '../util/network';
 import { SpotifyArtist } from '../design_course/model/types';
+import TopNavigation from './TopNavigation';
 
 const SetlistsSearchScreen: React.FC = props => {
   const navigation = useNavigation<any>();
@@ -20,8 +21,9 @@ const SetlistsSearchScreen: React.FC = props => {
 
   return (
     <>
+      <TopNavigation title={artist.name.toUpperCase()} />
       <Image
-        style={{ height: 128, width: '100%', marginTop: 32 }}
+        style={{ height: 128, width: '100%' }}
         source={{
           uri:
             artist?.images?.[0]?.url ||

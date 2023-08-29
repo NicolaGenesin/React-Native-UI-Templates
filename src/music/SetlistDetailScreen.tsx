@@ -5,7 +5,6 @@ import {
   Text,
   StatusBar,
   ImageBackground,
-  useWindowDimensions,
   Image,
   Platform,
   Animated,
@@ -13,14 +12,15 @@ import {
   FlatList,
   ScrollView,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
 import MyPressable from '../components/MyPressable';
-import Config from '../Config';
-import { FMSetlist, FMSongEntity } from '../design_course/model/types';
+import {
+  FMSetlist,
+  FMSongEntity,
+  SpotifyArtist,
+} from '../design_course/model/types';
 import moment from 'moment';
 import { searchSongsOnSpotify } from '../util/network';
+import TopNavigation from './TopNavigation';
 
 const infoHeight = 364.0;
 
@@ -42,10 +42,6 @@ const formatTime = (seconds: number): string => {
 };
 
 const SetlistDetailScreen: React.FC = props => {
-  const window = useWindowDimensions();
-  const navigation = useNavigation();
-  const insets = useSafeAreaInsets();
-
   const favIconScale = useRef<Animated.Value>(new Animated.Value(0.1));
   const opacity1 = useRef<Animated.Value>(new Animated.Value(0));
   const opacity2 = useRef<Animated.Value>(new Animated.Value(0));
@@ -79,7 +75,7 @@ const SetlistDetailScreen: React.FC = props => {
           setlist.artist.name,
         );
 
-        // Rnrich songsFromSet with spotify data by matching song name
+        // Enrich songsFromSet with spotify data by matching song name
         const enrichedSongsFromSet = songsFromSet.map(song => {
           const matchingSong = enrichedSpotifyData.find(
             (s: { songName: string }) => s.songName === song.name,
@@ -134,52 +130,12 @@ const SetlistDetailScreen: React.FC = props => {
     <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="transparent" barStyle="dark-content" />
       <View style={[styles.contentContainer]}>
-        <View
-          style={[
-            styles.header,
-            { height: 52 + insets.top, paddingTop: insets.top },
-          ]}
-        >
-          <View style={styles.headerLeft}>
-            <MyPressable
-              style={{ padding: 8 }}
-              android_ripple={{ color: 'grey', radius: 20, borderless: true }}
-              onPress={navigation.goBack}
-            >
-              <Icon name="arrow-back" size={25} color="black" />
-            </MyPressable>
-          </View>
-          <View
-            style={{
-              marginHorizontal: 16,
-              maxWidth: window.width - 16 - 32 - 41 - 74, // 16, 32:- total padding/margin; 41, 74:- left and right view's width
-            }}
-          >
-            <Text style={styles.headerTitle} numberOfLines={1}>
-              {setlist.artist.name.toUpperCase()}
-            </Text>
-          </View>
-          <View style={styles.headerRight}>
-            {/* <Icon
-              style={{ paddingRight: 8 }}
-              name="favorite-border"
-              size={25}
-              color="black"
-            /> */}
-            <Icon
-              style={{ paddingHorizontal: 8 }}
-              name="ios-share"
-              size={25}
-              color="black"
-            />
-          </View>
-        </View>
+        <TopNavigation title={setlist.artist.name.toUpperCase()} />
         <ScrollView
           style={styles.scrollContainer}
           contentContainerStyle={{
             flexGrow: 1,
             minHeight: infoHeight,
-            // maxHeight: tempHeight > infoHeight ? tempHeight : infoHeight,
           }}
         >
           <ImageBackground
@@ -194,17 +150,10 @@ const SetlistDetailScreen: React.FC = props => {
               source={require('../detail-dots.png')}
               style={styles.imageBackground}
               resizeMode="stretch"
-              imageStyle={{ opacity: 12 }}
+              imageStyle={{ opacity: 0.1 }}
             >
               <View style={styles.topSectionContainer}>
-                {/* <Text style={styles.title}>
-                  {setlist.artist.name.toUpperCase()}
-                </Text> */}
-                {/* <View style={styles.priceRatingContainer}></View> */}
-                <Text style={styles.venue}>
-                  {setlist.venue.name}
-                  {/* - {setlist.venue.city.name} */}
-                </Text>
+                <Text style={styles.venue}>{setlist.venue.name}</Text>
                 <Text style={styles.time}>
                   {moment(setlist.eventDate, 'DD-MM-YYYY').format(
                     'MMM DD, YYYY',
@@ -295,16 +244,6 @@ const SetlistDetailScreen: React.FC = props => {
           </View>
         </Animated.View>
       </View>
-
-      {/* <View style={[styles.backBtnContainer, { marginTop }]}>
-        <MyPressable
-          style={[]}
-          android_ripple={{ color: 'darkgrey', borderless: true, radius: 28 }}
-          onPress={() => navigation.goBack()}
-        >
-          <Icon name="arrow-back-ios" size={24} color="black" />
-        </MyPressable>
-      </View> */}
     </View>
   );
 };
@@ -323,12 +262,6 @@ const styles = StyleSheet.create({
   },
   topSectionContainer: { paddingHorizontal: 16, paddingVertical: 16 },
   scrollContainer: {},
-  // title: {
-  //   color: 'black',
-  //   fontSize: 22,
-  //   marginTop: 32,
-  //   fontWeight: 'bold',
-  // },
   venue: {
     color: 'black',
     fontWeight: 'bold',
@@ -464,31 +397,6 @@ const styles = StyleSheet.create({
     // backgroundColor: 'yellow',
   },
   imageBackground: {},
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
-    paddingHorizontal: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'lightgrey',
-  },
-  headerLeft: {
-    alignItems: 'flex-start',
-    flexGrow: 1,
-    flexBasis: 0,
-  },
-  headerTitle: {
-    color: 'black',
-    fontSize: 22,
-    fontFamily: 'WorkSans-SemiBold',
-    textAlign: 'center',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    flexGrow: 1,
-    flexBasis: 0,
-  },
 });
 
 export default SetlistDetailScreen;
