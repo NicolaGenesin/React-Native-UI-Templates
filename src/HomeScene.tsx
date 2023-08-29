@@ -33,9 +33,9 @@ const DEMOS = [
   //   screenName: 'Hotel',
   // },
   {
-    name: 'SetlistsSearchScreen',
+    name: 'ArtistSearchScreen',
     background: AppImages.fitness_app,
-    screenName: 'SetlistsSearchScreen',
+    screenName: 'ArtistSearchScreen',
   },
   // {
   //   name: 'design_course',

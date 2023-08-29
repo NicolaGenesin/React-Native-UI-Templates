@@ -20,6 +20,7 @@ import MyPressable from '../components/MyPressable';
 import Config from '../Config';
 import { FMSetlist, FMSongEntity } from '../design_course/model/types';
 import moment from 'moment';
+import { searchSongsOnSpotify } from '../util/network';
 
 const infoHeight = 364.0;
 
@@ -51,91 +52,51 @@ const SetlistDetailScreen: React.FC = props => {
   const opacity3 = useRef<Animated.Value>(new Animated.Value(0));
 
   const setlist: FMSetlist = props.route.params.setlist;
+  const artist: SpotifyArtist = props.route.params.artist;
   const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
-
-  const compareWithSpotify = async (
-    songs: FMSongEntity[],
-    artist: string,
-    accessToken: string,
-  ) => {
-    try {
-      for (const song of songs) {
-        const query = `${song.name} ${artist}`;
-        const searchResponse = await fetch(
-          `https://api.spotify.com/v1/search?q=${encodeURIComponent(
-            query,
-          )}&type=track`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          },
-        );
-
-        if (searchResponse.ok) {
-          const searchResult = await searchResponse.json();
-          const trackId = searchResult.tracks.items[0]?.id;
-          const durationInSeconds =
-            searchResult.tracks.items[0]?.duration_ms / 1000;
-          const trackImageUrl =
-            searchResult.tracks.items[0]?.album?.images?.[1].url;
-
-          // console.log(JSON.stringify(searchResult.tracks.items[0], null, 2));
-
-          // enrich song with spotify data
-          song.spotifyId = trackId;
-          song.spotifyImageUrl = trackImageUrl;
-          song.spotifyAlbumName = searchResult.tracks.items[0]?.album?.name;
-          song.duration = durationInSeconds;
-
-          // console.log(query, trackId, trackImageUrl);
-          // if (trackId) {
-          //   addTrackToPlaylist(trackId);
-          // } else {
-          //   console.warn(`No track found for ${song.name}`);
-          // }
-        } else {
-          console.error('Error searching for track', searchResponse);
-        }
-      }
-
-      console.log('Setlist added to playlist');
-      // } else {
-      //   console.error('Error creating playlist 1');
-      // }
-    } catch (error) {
-      console.error('Error creating playlist 2', error);
-    }
-
-    console.log('here');
-
-    setAllSongs(songs);
-  };
-
-  // console.log('allsongszdd', allSongs);
 
   useEffect(() => {
     if (setlist) {
-      const allSongsTmp: FMSongEntity[] = [];
+      (async () => {
+        const songsFromSet: FMSongEntity[] = [];
 
-      (setlist.sets.set || []).forEach(section => {
-        if (section.song) {
-          section.song.forEach(song => {
-            if (song.name) {
-              allSongsTmp.push({
-                name: song.name,
-                encore: !!section.encore,
-              });
-            }
-          });
-        }
-      });
+        (setlist.sets.set || []).forEach(section => {
+          if (section.song) {
+            section.song.forEach(song => {
+              if (song.name) {
+                songsFromSet.push({
+                  name: song.name,
+                  encore: !!section.encore,
+                });
+              }
+            });
+          }
+        });
 
-      compareWithSpotify(
-        allSongsTmp,
-        setlist.artist.name,
-        props.route.params.accessToken, // todo this needs to change, we want to let people login from the detail page
-      );
+        const songNames = songsFromSet.map(song => song.name);
+        const enrichedSpotifyData = await searchSongsOnSpotify(
+          songNames,
+          setlist.artist.name,
+        );
+
+        // Rnrich songsFromSet with spotify data by matching song name
+        const enrichedSongsFromSet = songsFromSet.map(song => {
+          const matchingSong = enrichedSpotifyData.find(
+            (s: { songName: string }) => s.songName === song.name,
+          );
+
+          if (matchingSong) {
+            return {
+              ...song,
+              spotifyData: matchingSong,
+            };
+          } else {
+            return song;
+          }
+        });
+
+        setAllSongs(enrichedSongsFromSet);
+      })();
     }
   }, [setlist]);
 
@@ -168,8 +129,6 @@ const SetlistDetailScreen: React.FC = props => {
       }),
     ]).start();
   }, []);
-
-  const spotifySongsFound = allSongs.filter(song => !!song.spotifyId);
 
   return (
     <View style={{ flex: 1 }}>
@@ -225,7 +184,7 @@ const SetlistDetailScreen: React.FC = props => {
         >
           <ImageBackground
             source={{
-              uri: 'https://www.rollingstone.co.uk/wp-content/uploads/sites/2/2022/01/PLACEBO_PRESS.01-Credit-Mads-Perch-1024x451.jpg',
+              uri: artist.images?.[0]?.url,
             }}
             style={styles.imageBackground}
             resizeMode="cover"
@@ -257,7 +216,7 @@ const SetlistDetailScreen: React.FC = props => {
                     <Text style={styles.durationContent}>
                       {formatTime(
                         allSongs.reduce((acc, song) => {
-                          return acc + (song.duration || 0);
+                          return acc + (song.spotifyData?.duration || 1) / 1000;
                         }, 0),
                       )}
                     </Text>
@@ -267,7 +226,8 @@ const SetlistDetailScreen: React.FC = props => {
                       TRACK AVAILABILITY
                     </Text>
                     <Text style={styles.availabilityContent}>
-                      {spotifySongsFound.length}/{allSongs.length}
+                      {allSongs.filter(song => !!song.spotifyData?.id).length}/
+                      {allSongs.length}
                     </Text>
                   </View>
                 </View>
@@ -296,7 +256,7 @@ const SetlistDetailScreen: React.FC = props => {
                         style={{ height: 40, width: 40, marginEnd: 8 }}
                         source={{
                           uri:
-                            item.spotifyImageUrl ||
+                            item.spotifyData?.albumImageUrl ||
                             'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
                         }}
                         resizeMode="stretch"
@@ -315,7 +275,7 @@ const SetlistDetailScreen: React.FC = props => {
                         )}
                       </View>
                       <Text style={styles.albumName}>
-                        {item.spotifyAlbumName}
+                        {item.spotifyData?.albumName}
                       </Text>
                     </View>
                   </View>

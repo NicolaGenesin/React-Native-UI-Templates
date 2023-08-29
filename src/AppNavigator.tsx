@@ -21,6 +21,7 @@ import HotelHomeScreen2 from './music/SetlistsSearchScreen';
 import WelcomeScreen from './music/WelcomeScreen';
 import SetlistDetailScreen from './music/SetlistDetailScreen';
 import SetlistsSearchScreen from './music/SetlistsSearchScreen';
+import ArtistSearchScreen from './music/ArtistSearchScreen';
 
 const Drawer = createDrawerNavigator();
 /**
@@ -81,6 +82,10 @@ export default () => {
         />
         <Stack.Group>
           <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+          <Stack.Screen
+            name="ArtistSearchScreen"
+            component={ArtistSearchScreen}
+          />
           <Stack.Screen
             name="SetlistsSearchScreen"
             component={SetlistsSearchScreen}

@@ -52,6 +52,7 @@ export interface FMSongEntity {
   name: string;
   cover?: FMCoverOrArtist1 | null;
   encore?: boolean | null;
+  spotifyData?: SpotifySong | null;
 }
 export interface FMCoverOrArtist1 {
   mbid: string;
@@ -59,4 +60,35 @@ export interface FMCoverOrArtist1 {
   sortName: string;
   disambiguation: string;
   url: string;
+}
+
+export interface SpotifyArtist {
+  external_urls: SpotifyExternalUrls;
+  followers: SpotifyFollowers;
+  genres?: string[] | null;
+  href: string;
+  id: string;
+  images?: SpotifyImagesEntity[] | null;
+  name: string;
+  popularity: number;
+  type: string;
+  uri: string;
+}
+export interface SpotifyExternalUrls {
+  spotify: string;
+}
+export interface SpotifyFollowers {
+  href?: null;
+  total: number;
+}
+export interface SpotifyImagesEntity {
+  height: number;
+  url: string;
+  width: number;
+}
+export interface SpotifySong {
+  albumImageUrl: string;
+  albumName: string;
+  duration: number;
+  id: string;
 }
