@@ -3,14 +3,11 @@ import {
   StyleSheet,
   View,
   Text,
-  StatusBar,
   ImageBackground,
   Image,
-  Platform,
   Animated,
-  Easing,
-  FlatList,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { getPreviewOverlay } from '../util/network';
 import moment from 'moment';
@@ -42,10 +39,14 @@ const SetlistDetailScreenHeader = React.memo(
     artist,
     setlist,
     allSongs,
+    playlistName,
+    setPlaylistName,
   }: {
     artist: SpotifyArtist;
     setlist: FMSetlist;
     allSongs: FMSongEntity[];
+    playlistName: string;
+    setPlaylistName: (text: string) => void;
   }) => {
     const imageOpacity = useRef<Animated.Value>(new Animated.Value(0));
     const [image, setImage] = useState<string>('');
@@ -118,7 +119,7 @@ const SetlistDetailScreenHeader = React.memo(
                 renderToHardwareTextureAndroid
               >
                 <Image
-                  style={{ height: 100, width: 100 }}
+                  style={{ height: 100, width: 100, borderRadius: 4 }}
                   source={{
                     uri: image,
                   }}
@@ -128,6 +129,14 @@ const SetlistDetailScreenHeader = React.memo(
             )}
           </View>
         </ImageBackground>
+        <View style={styles.playlistContainer}>
+          <Text style={styles.playlistNameTitle}>YOUR PLAYLIST NAME</Text>
+          <TextInput
+            style={styles.playlistNameText}
+            defaultValue={playlistName}
+            onChangeText={setPlaylistName}
+          />
+        </View>
         <Text style={styles.setlistTitle}>TRACKS PLAYED DURING EVENT</Text>
       </>
     );
@@ -168,6 +177,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 8,
+  },
+  playlistContainer: {},
+  playlistNameTitle: {
+    color: '#333',
+    fontSize: 12,
+    fontWeight: 'bold',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
+  },
+  playlistNameText: {
+    color: 'black',
+    fontSize: 16,
+    fontWeight: 'bold',
+    paddingBottom: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginHorizontal: 16,
   },
   availabilityContainer: { marginVertical: 8 },
   availabilityTitle: { color: '#333', fontSize: 12, fontWeight: 'bold' },

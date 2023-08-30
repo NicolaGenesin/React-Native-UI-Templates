@@ -29,6 +29,15 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
   const setlist: FMSetlist = props.route.params.setlist;
   const artist: SpotifyArtist = props.route.params.artist;
   const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
+  const [playlistName, setPlaylistName] = useState<string>('');
+
+  useEffect(() => {
+    if (artist && setlist) {
+      setPlaylistName(
+        `${artist.name} at ${setlist.venue.name}, ${setlist.eventDate}`,
+      );
+    }
+  }, [artist, setlist]);
 
   useEffect(() => {
     if (setlist) {
@@ -101,6 +110,8 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
                 artist={artist}
                 setlist={setlist}
                 allSongs={allSongs}
+                playlistName={playlistName}
+                setPlaylistName={setPlaylistName}
               />
             }
             ListFooterComponent={
@@ -132,7 +143,8 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
 
                 await savePlaylistOnSpotify(
                   spotifySongIds,
-                  `${artist.name} at ${setlist.venue.name}, ${setlist.eventDate}`,
+                  playlistName ||
+                    `${artist.name} at ${setlist.venue.name}, ${setlist.eventDate}`,
                   artist.images?.[0]?.url,
                   artist.name,
                   setlist.venue.name,
