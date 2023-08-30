@@ -4,11 +4,8 @@ import {
   View,
   Text,
   StatusBar,
-  ImageBackground,
-  Image,
   Platform,
   Animated,
-  Easing,
   FlatList,
   ActivityIndicator,
 } from 'react-native';
@@ -16,137 +13,19 @@ import MyPressable from '../components/MyPressable';
 import {
   FMSetlist,
   FMSongEntity,
+  ScreenComponentProps,
   SpotifyArtist,
 } from '../design_course/model/types';
-import moment from 'moment';
-import {
-  getPreviewOverlay,
-  savePlaylistOnSpotify,
-  searchSongsOnSpotify,
-} from '../util/network';
+import { savePlaylistOnSpotify, searchSongsOnSpotify } from '../util/network';
 import TopNavigation from './TopNavigation';
 import { handleLogin } from '../util/auth';
+import SetlistDetailScreenItem from './SetlistDetailScreenItem';
+import SetlistDetailScreenHeader from './SetlistDetailScreenHeader';
 
-const formatTime = (seconds: number): string => {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-
-  let formattedTime = '';
-
-  if (hours > 0) {
-    formattedTime += `${hours}h `;
-  }
-
-  if (minutes > 0 || hours === 0) {
-    formattedTime += `${minutes}m`;
-  }
-
-  return formattedTime;
-};
-
-const SetlistDetailScreenHeader = React.memo(
-  ({
-    artist,
-    setlist,
-    allSongs,
-  }: {
-    artist: SpotifyArtist;
-    setlist: FMSetlist;
-    allSongs: FMSongEntity[];
-  }) => {
-    const imageOpacity = useRef<Animated.Value>(new Animated.Value(0));
-    const [image, setImage] = useState<string>('');
-
-    useEffect(() => {
-      (async () => {
-        if (artist && setlist) {
-          const base64Image: string = (await getPreviewOverlay(
-            artist.images?.[0]?.url as string,
-            artist.name,
-            setlist.venue.name,
-            setlist.eventDate,
-          )) as string;
-
-          setImage('data:image/jpeg;base64,' + base64Image);
-
-          Animated.timing(imageOpacity.current, {
-            toValue: 1,
-            duration: 200,
-            useNativeDriver: true,
-          }).start();
-        }
-      })();
-    }, [artist, setlist]);
-
-    return (
-      <>
-        <ImageBackground
-          source={{
-            uri: artist.images?.[0]?.url,
-          }}
-          style={styles.imageBackground}
-          resizeMode="cover"
-          imageStyle={{ opacity: 0.3 }}
-        >
-          <View style={styles.topSectionContainer}>
-            <View style={styles.leftSectionContainer}>
-              <Text style={styles.venue}>{setlist.venue.name}</Text>
-              <Text style={styles.time}>
-                {moment(setlist.eventDate, 'DD-MM-YYYY').format('MMM DD, YYYY')}
-              </Text>
-              <View style={styles.availabilityContainer}>
-                <Text style={styles.availabilityTitle}>TRACKS AVAILABLE</Text>
-                {allSongs.length ? (
-                  <Text style={styles.availabilityContent}>
-                    {allSongs.filter(song => !!song.spotifyData?.id).length}/
-                    {allSongs.length}
-                    {' ~ '}
-                    {formatTime(
-                      allSongs.reduce((acc, song) => {
-                        return acc + (song.spotifyData?.duration || 1) / 1000;
-                      }, 0),
-                    )}
-                  </Text>
-                ) : (
-                  <View style={styles.loadingIndicatorTracks}>
-                    <ActivityIndicator size="small" color="black" />
-                  </View>
-                )}
-              </View>
-              {!!setlist.tour?.name && (
-                <Animated.Text style={styles.tour}>
-                  {setlist.tour.name.toUpperCase()}
-                </Animated.Text>
-              )}
-            </View>
-            {!!image.length && (
-              <Animated.View
-                style={{ opacity: imageOpacity.current }}
-                renderToHardwareTextureAndroid
-              >
-                <Image
-                  style={{ height: 100, width: 100 }}
-                  source={{
-                    uri: image,
-                  }}
-                  resizeMode="stretch"
-                />
-              </Animated.View>
-            )}
-          </View>
-        </ImageBackground>
-        <Text style={styles.setlistTitle}>TRACKS PLAYED DURING EVENT</Text>
-      </>
-    );
-  },
-);
-
-const SetlistDetailScreen: React.FC = props => {
-  const favIconScale = useRef<Animated.Value>(new Animated.Value(0.1));
-  const opacity1 = useRef<Animated.Value>(new Animated.Value(0));
-  const opacity2 = useRef<Animated.Value>(new Animated.Value(0));
-  const opacity3 = useRef<Animated.Value>(new Animated.Value(0));
-
+const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
+  props: ScreenComponentProps,
+) => {
+  const screenOpacity = useRef<Animated.Value>(new Animated.Value(0));
   const setlist: FMSetlist = props.route.params.setlist;
   const artist: SpotifyArtist = props.route.params.artist;
   const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
@@ -197,33 +76,12 @@ const SetlistDetailScreen: React.FC = props => {
   }, [setlist]);
 
   useEffect(() => {
-    Animated.timing(favIconScale.current, {
+    Animated.timing(screenOpacity.current, {
       toValue: 1,
-      duration: 1000,
-      easing: Easing.out(Easing.cubic),
+      duration: 500,
+      delay: 200,
       useNativeDriver: true,
     }).start();
-
-    Animated.parallel([
-      Animated.timing(opacity1.current, {
-        toValue: 1,
-        duration: 500,
-        delay: 200,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity2.current, {
-        toValue: 1,
-        duration: 500,
-        delay: 400,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacity3.current, {
-        toValue: 1,
-        duration: 500,
-        delay: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
   }, []);
 
   return (
@@ -232,7 +90,7 @@ const SetlistDetailScreen: React.FC = props => {
       <View style={[styles.contentContainer]}>
         <TopNavigation title={setlist.artist.name.toUpperCase()} />
         <Animated.View
-          style={[styles.listContainer, { opacity: opacity1.current }]}
+          style={[styles.listContainer, { opacity: screenOpacity.current }]}
           renderToHardwareTextureAndroid
         >
           <FlatList
@@ -254,39 +112,9 @@ const SetlistDetailScreen: React.FC = props => {
                 <View style={{ height: 80 }} />
               )
             }
-            renderItem={({ item, index }) => {
-              return (
-                <View style={styles.itemContainer}>
-                  <View>
-                    <Image
-                      style={{ height: 40, width: 40, marginEnd: 8 }}
-                      source={{
-                        uri:
-                          item.spotifyData?.albumImageUrl ||
-                          'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
-                      }}
-                      resizeMode="stretch"
-                    />
-                    <View style={styles.trackIndexContainer}>
-                      <Text style={styles.trackIndex}>{index + 1}</Text>
-                    </View>
-                  </View>
-                  <View>
-                    <View style={styles.itemNameContainer}>
-                      <Text style={styles.itemName}>{item.name}</Text>
-                      {item.encore && (
-                        <View style={styles.tagContainer}>
-                          <Text style={styles.tagText}>ENCORE</Text>
-                        </View>
-                      )}
-                    </View>
-                    <Text style={styles.albumName}>
-                      {item.spotifyData?.albumName}
-                    </Text>
-                  </View>
-                </View>
-              );
-            }}
+            renderItem={({ item, index }) => (
+              <SetlistDetailScreenItem item={item} index={index} />
+            )}
           />
         </Animated.View>
         <Animated.View
@@ -333,106 +161,12 @@ const styles = StyleSheet.create({
     shadowRadius: 10.0,
     elevation: 16,
   },
-  topSectionContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  leftSectionContainer: {},
-  scrollContainer: {},
-  venue: {
-    color: 'black',
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  time: {
-    marginTop: 4,
-    color: '#333',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  tour: {
-    color: '#333',
-    fontSize: 10,
-    fontWeight: '500',
-  },
-  setlistTitle: {
-    color: '#333',
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 8,
-  },
-  trackIndexContainer: {
-    position: 'absolute',
-    backgroundColor: 'black',
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  trackIndex: {
-    fontSize: 12,
-    fontWeight: '500',
-    color: 'white',
-  },
   listContainer: { flex: 1 },
-  itemContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    alignItems: 'center',
-  },
-  itemNameContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  availabilityContainer: { marginVertical: 8 },
-  availabilityTitle: { color: '#333', fontSize: 12, fontWeight: 'bold' },
-  availabilityContent: {
-    color: 'black',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  itemName: {
-    fontWeight: 'bold',
-    marginBottom: 2,
-  },
-  albumName: {
-    color: '#333',
-  },
-  tagContainer: {
-    backgroundColor: '#33BBC5',
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-    marginLeft: 8,
-    borderRadius: 16,
-    alignSelf: 'flex-start',
-  },
-  tagText: {
-    color: 'white',
-    fontSize: 8,
-    fontWeight: 'bold',
-  },
-  price: {
-    flex: 1,
-    color: 'rgb(0, 182, 240)',
-  },
-  textStyle: {
-    fontSize: 22,
-    color: 'darkslategrey',
-    letterSpacing: 0.27,
-  },
   footerContainer: {
     position: 'absolute',
     bottom: 16,
     flexDirection: 'row',
     paddingHorizontal: 24,
-    // paddingBottom: 16,
   },
   saveSetlistButton: {
     flex: 1,
@@ -449,16 +183,11 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     color: 'white',
   },
-  imageBackground: {},
   loadingIndicatorFlatlist: {
     flex: 1,
     marginTop: 16,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingIndicatorTracks: {
-    marginTop: 6,
-    alignItems: 'flex-start',
   },
 });
 

@@ -92,3 +92,9 @@ export interface SpotifySong {
   duration: number;
   id: string;
 }
+
+export type ScreenComponentProps = {
+  route: {
+    params: any;
+  };
+};
