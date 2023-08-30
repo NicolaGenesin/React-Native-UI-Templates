@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Text, Image, FlatList } from 'react-native';
+import { Image, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MyPressable from '../components/MyPressable';
 import { searchArtistSetlistsOnFM } from '../util/network';
-import { SpotifyArtist } from '../design_course/model/types';
+import {
+  FMSetlist,
+  ScreenComponentProps,
+  SpotifyArtist,
+} from '../design_course/model/types';
 import TopNavigation from './TopNavigation';
+import SetlistsSearchScreenItem from './SetlistsSearchScreenItem';
 
-const SetlistsSearchScreen: React.FC = props => {
+const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
+  props: ScreenComponentProps,
+) => {
   const navigation = useNavigation<any>();
-  const [setlists, setSetlists] = useState<any[]>([]);
+  const [setlists, setSetlists] = useState<FMSetlist[]>([]);
   const artist: SpotifyArtist = props.route.params.artist;
 
   useEffect(() => {
@@ -37,7 +44,7 @@ const SetlistsSearchScreen: React.FC = props => {
             resizeMode="cover"
           />
         }
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <MyPressable
             style={{ marginTop: 8 }}
             onPress={() => {
@@ -47,8 +54,7 @@ const SetlistsSearchScreen: React.FC = props => {
               });
             }}
           >
-            <Text>{item.venue.name}</Text>
-            <Text>{item.eventDate}</Text>
+            <SetlistsSearchScreenItem item={item} index={index} />
           </MyPressable>
         )}
       />

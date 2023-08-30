@@ -80,6 +80,7 @@ const styles = StyleSheet.create({
   itemName: {
     fontWeight: 'bold',
     marginBottom: 2,
+    flexShrink: 1,
   },
   tagContainer: {
     backgroundColor: '#33BBC5',
