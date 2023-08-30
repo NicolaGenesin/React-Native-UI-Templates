@@ -21,6 +21,7 @@ import TopNavigation from './TopNavigation';
 import { handleLogin } from '../util/auth';
 import SetlistDetailScreenItem from './SetlistDetailScreenItem';
 import SetlistDetailScreenHeader from './SetlistDetailScreenHeader';
+import moment from 'moment';
 
 const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
   props: ScreenComponentProps,
@@ -33,9 +34,11 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
 
   useEffect(() => {
     if (artist && setlist) {
-      setPlaylistName(
-        `${artist.name} at ${setlist.venue.name}, ${setlist.eventDate}`,
+      const date = moment(setlist.eventDate, 'DD-MM-YYYY').format(
+        'MMM DD, YYYY',
       );
+
+      setPlaylistName(`${artist.name} at ${setlist.venue.name}, ${date}`);
     }
   }, [artist, setlist]);
 
@@ -141,14 +144,18 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
                   .map(song => song.spotifyData?.id)
                   .filter(id => !!id);
 
+                const date = moment(setlist.eventDate, 'DD-MM-YYYY').format(
+                  'MMM DD, YYYY',
+                );
+
                 await savePlaylistOnSpotify(
                   spotifySongIds,
                   playlistName ||
-                    `${artist.name} at ${setlist.venue.name}, ${setlist.eventDate}`,
+                    `${artist.name} at ${setlist.venue.name}, ${date}`,
                   artist.images?.[0]?.url,
                   artist.name,
                   setlist.venue.name,
-                  setlist.eventDate,
+                  date,
                 );
               }}
             >

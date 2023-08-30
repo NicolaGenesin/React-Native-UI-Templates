@@ -54,11 +54,15 @@ const SetlistDetailScreenHeader = React.memo(
     useEffect(() => {
       (async () => {
         if (artist && setlist) {
+          const date = moment(setlist.eventDate, 'DD-MM-YYYY').format(
+            'MMM DD, YYYY',
+          );
+
           const base64Image: string = (await getPreviewOverlay(
             artist.images?.[0]?.url as string,
             artist.name,
             setlist.venue.name,
-            setlist.eventDate,
+            date,
           )) as string;
 
           setImage('data:image/jpeg;base64,' + base64Image);
