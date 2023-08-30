@@ -90,7 +90,6 @@ export const searchArtistSetlistsOnFM = async (artistName: string) => {
   return [];
 };
 
-// store song ids and title as spotify playlist using spotify api
 export const savePlaylistOnSpotify = async (
   songIds: string[],
   playlistName: string,
@@ -202,4 +201,57 @@ export const savePlaylistOnSpotify = async (
   }
 
   return false;
+};
+
+export const getPreviewOverlay = async (
+  imageUrl: string,
+  artistName: string,
+  venue: string,
+  date: string,
+) => {
+  console.log({
+    imageUrl,
+    artistName,
+    venue,
+    date,
+  });
+
+  const response = await fetch(
+    'https://f9b9-146-241-120-0.ngrok-free.app/api/overlay',
+    {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        imageUrl,
+        artistName,
+        venue,
+        date,
+      }),
+    },
+  );
+
+  if (response.ok) {
+    console.log('[Preview] Cover image created and returned to the client.');
+
+    const blob = await response.blob();
+
+    // Step 3: Convert the Blob to Base64 encoded string
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result.split(',')[1]);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+
+    return base64;
+  }
+
+  console.log('[Preview] Error creating preview cover.');
+
+  return null;
 };

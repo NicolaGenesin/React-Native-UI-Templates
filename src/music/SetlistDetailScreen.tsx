@@ -10,7 +10,6 @@ import {
   Animated,
   Easing,
   FlatList,
-  ScrollView,
 } from 'react-native';
 import MyPressable from '../components/MyPressable';
 import {
@@ -19,11 +18,13 @@ import {
   SpotifyArtist,
 } from '../design_course/model/types';
 import moment from 'moment';
-import { savePlaylistOnSpotify, searchSongsOnSpotify } from '../util/network';
+import {
+  getPreviewOverlay,
+  savePlaylistOnSpotify,
+  searchSongsOnSpotify,
+} from '../util/network';
 import TopNavigation from './TopNavigation';
-import { handleLogin, retrieveTokens } from '../util/auth';
-
-const infoHeight = 364.0;
+import { handleLogin } from '../util/auth';
 
 const formatTime = (seconds: number): string => {
   const hours = Math.floor(seconds / 3600);
@@ -41,6 +42,97 @@ const formatTime = (seconds: number): string => {
 
   return formattedTime;
 };
+
+const SetlistDetailScreenHeader = React.memo(
+  ({
+    artist,
+    setlist,
+    allSongs,
+  }: {
+    artist: SpotifyArtist;
+    setlist: FMSetlist;
+    allSongs: FMSongEntity[];
+  }) => {
+    const imageOpacity = useRef<Animated.Value>(new Animated.Value(0));
+    const [image, setImage] = useState<string>('');
+
+    useEffect(() => {
+      (async () => {
+        if (artist && setlist) {
+          const base64Image: string = (await getPreviewOverlay(
+            artist.images?.[0]?.url as string,
+            artist.name,
+            setlist.venue.name,
+            setlist.eventDate,
+          )) as string;
+
+          setImage('data:image/jpeg;base64,' + base64Image);
+
+          Animated.timing(imageOpacity.current, {
+            toValue: 1,
+            duration: 200,
+            useNativeDriver: true,
+          }).start();
+        }
+      })();
+    }, [artist, setlist]);
+
+    return (
+      <>
+        <ImageBackground
+          source={{
+            uri: artist.images?.[0]?.url,
+          }}
+          style={styles.imageBackground}
+          resizeMode="cover"
+          imageStyle={{ opacity: 0.3 }}
+        >
+          <View style={styles.topSectionContainer}>
+            <View style={styles.leftSectionContainer}>
+              <Text style={styles.venue}>{setlist.venue.name}</Text>
+              <Text style={styles.time}>
+                {moment(setlist.eventDate, 'DD-MM-YYYY').format('MMM DD, YYYY')}
+              </Text>
+              <View style={styles.availabilityContainer}>
+                <Text style={styles.availabilityTitle}>TRACKS AVAILABLE</Text>
+                <Text style={styles.availabilityContent}>
+                  {allSongs.filter(song => !!song.spotifyData?.id).length}/
+                  {allSongs.length}
+                  {' ~ '}
+                  {formatTime(
+                    allSongs.reduce((acc, song) => {
+                      return acc + (song.spotifyData?.duration || 1) / 1000;
+                    }, 0),
+                  )}
+                </Text>
+              </View>
+              {!!setlist.tour?.name && (
+                <Animated.Text style={styles.tour}>
+                  {setlist.tour.name.toUpperCase()}
+                </Animated.Text>
+              )}
+            </View>
+            {!!image.length && (
+              <Animated.View
+                style={{ opacity: imageOpacity.current }}
+                renderToHardwareTextureAndroid
+              >
+                <Image
+                  style={{ height: 100, width: 100 }}
+                  source={{
+                    uri: image,
+                  }}
+                  resizeMode="stretch"
+                />
+              </Animated.View>
+            )}
+          </View>
+        </ImageBackground>
+        <Text style={styles.setlistTitle}>TRACKS PLAYED DURING EVENT</Text>
+      </>
+    );
+  },
+);
 
 const SetlistDetailScreen: React.FC = props => {
   const favIconScale = useRef<Animated.Value>(new Animated.Value(0.1));
@@ -132,108 +224,56 @@ const SetlistDetailScreen: React.FC = props => {
       <StatusBar backgroundColor="transparent" barStyle="dark-content" />
       <View style={[styles.contentContainer]}>
         <TopNavigation title={setlist.artist.name.toUpperCase()} />
-        <ScrollView
-          style={styles.scrollContainer}
-          contentContainerStyle={{
-            flexGrow: 1,
-            minHeight: infoHeight,
-          }}
+        <Animated.View
+          style={[styles.listContainer, { opacity: opacity1.current }]}
+          renderToHardwareTextureAndroid
         >
-          <ImageBackground
-            source={{
-              uri: artist.images?.[0]?.url,
-            }}
-            style={styles.imageBackground}
-            resizeMode="cover"
-            imageStyle={{ opacity: 0.55 }}
-          >
-            <ImageBackground
-              source={require('../detail-dots.png')}
-              style={styles.imageBackground}
-              resizeMode="stretch"
-              imageStyle={{ opacity: 0.1 }}
-            >
-              <View style={styles.topSectionContainer}>
-                <Text style={styles.venue}>{setlist.venue.name}</Text>
-                <Text style={styles.time}>
-                  {moment(setlist.eventDate, 'DD-MM-YYYY').format(
-                    'MMM DD, YYYY',
-                  )}
-                </Text>
-                <View style={styles.durationAvailabilityContainer}>
-                  <View style={styles.durationContainer}>
-                    <Text style={styles.durationTitle}>DURATION</Text>
-                    <Text style={styles.durationContent}>
-                      {formatTime(
-                        allSongs.reduce((acc, song) => {
-                          return acc + (song.spotifyData?.duration || 1) / 1000;
-                        }, 0),
-                      )}
-                    </Text>
+          <FlatList
+            data={allSongs}
+            keyExtractor={item => item.name}
+            ListHeaderComponent={
+              <SetlistDetailScreenHeader
+                artist={artist}
+                setlist={setlist}
+                allSongs={allSongs}
+              />
+            }
+            ListFooterComponent={<View style={{ height: 80 }} />}
+            renderItem={({ item, index }) => {
+              return (
+                <View style={styles.itemContainer}>
+                  <View>
+                    <Image
+                      style={{ height: 40, width: 40, marginEnd: 8 }}
+                      source={{
+                        uri:
+                          item.spotifyData?.albumImageUrl ||
+                          'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
+                      }}
+                      resizeMode="stretch"
+                    />
+                    <View style={styles.trackIndexContainer}>
+                      <Text style={styles.trackIndex}>{index + 1}</Text>
+                    </View>
                   </View>
-                  <View style={styles.availabilityContainer}>
-                    <Text style={styles.availabilityTitle}>
-                      TRACK AVAILABILITY
-                    </Text>
-                    <Text style={styles.availabilityContent}>
-                      {allSongs.filter(song => !!song.spotifyData?.id).length}/
-                      {allSongs.length}
+                  <View>
+                    <View style={styles.itemNameContainer}>
+                      <Text style={styles.itemName}>{item.name}</Text>
+                      {item.encore && (
+                        <View style={styles.tagContainer}>
+                          <Text style={styles.tagText}>ENCORE</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.albumName}>
+                      {item.spotifyData?.albumName}
                     </Text>
                   </View>
                 </View>
-                {!!setlist.tour?.name && (
-                  <Animated.Text style={styles.tour}>
-                    TOUR: {setlist.tour.name.toUpperCase()}
-                  </Animated.Text>
-                )}
-              </View>
-            </ImageBackground>
-          </ImageBackground>
-          <Text style={styles.setlistTitle}>SETLIST</Text>
-
-          <Animated.View
-            style={[styles.listContainer, { opacity: opacity1.current }]}
-            renderToHardwareTextureAndroid
-          >
-            <FlatList
-              data={allSongs}
-              keyExtractor={item => item.name}
-              renderItem={({ item, index }) => {
-                return (
-                  <View style={styles.itemContainer}>
-                    <View>
-                      <Image
-                        style={{ height: 40, width: 40, marginEnd: 8 }}
-                        source={{
-                          uri:
-                            item.spotifyData?.albumImageUrl ||
-                            'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
-                        }}
-                        resizeMode="stretch"
-                      />
-                      <View style={styles.trackIndexContainer}>
-                        <Text style={styles.trackIndex}>{index + 1}</Text>
-                      </View>
-                    </View>
-                    <View>
-                      <View style={styles.itemNameContainer}>
-                        <Text style={styles.itemName}>{item.name}</Text>
-                        {item.encore && (
-                          <View style={styles.tagContainer}>
-                            <Text style={styles.tagText}>ENCORE</Text>
-                          </View>
-                        )}
-                      </View>
-                      <Text style={styles.albumName}>
-                        {item.spotifyData?.albumName}
-                      </Text>
-                    </View>
-                  </View>
-                );
-              }}
-            />
-          </Animated.View>
-        </ScrollView>
+              );
+            }}
+          />
+        </Animated.View>
         <Animated.View
           style={[styles.footerContainer]}
           renderToHardwareTextureAndroid
@@ -249,11 +289,7 @@ const SetlistDetailScreen: React.FC = props => {
 
                 await savePlaylistOnSpotify(
                   spotifySongIds,
-                  artist.name +
-                    ' at ' +
-                    setlist.venue.name +
-                    ', ' +
-                    setlist.eventDate,
+                  `${artist.name} at ${setlist.venue.name}, ${setlist.eventDate}`,
                   artist.images?.[0]?.url,
                   artist.name,
                   setlist.venue.name,
@@ -282,7 +318,14 @@ const styles = StyleSheet.create({
     shadowRadius: 10.0,
     elevation: 16,
   },
-  topSectionContainer: { paddingHorizontal: 16, paddingVertical: 16 },
+  topSectionContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  leftSectionContainer: {},
   scrollContainer: {},
   venue: {
     color: 'black',
@@ -290,19 +333,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   time: {
-    color: 'black',
+    marginTop: 4,
+    color: '#333',
+    fontWeight: 'bold',
     fontSize: 14,
   },
   tour: {
-    color: 'gray',
+    color: '#333',
     fontSize: 10,
+    fontWeight: '500',
   },
   setlistTitle: {
-    color: 'gray',
-    fontSize: 16,
-    marginTop: 16,
+    color: '#333',
+    fontSize: 12,
     fontWeight: 'bold',
     paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
   },
   trackIndexContainer: {
     position: 'absolute',
@@ -317,9 +364,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: 'white',
   },
-  listContainer: { marginTop: 8, paddingHorizontal: 16 },
+  listContainer: { flex: 1 },
   itemContainer: {
     flexDirection: 'row',
+    paddingHorizontal: 16,
     paddingVertical: 4,
     alignItems: 'center',
   },
@@ -327,34 +375,31 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  durationContainer: { marginRight: 8 },
-  durationTitle: { color: '#333', fontSize: 12, fontWeight: 'bold' },
-  durationContent: { color: 'black', fontSize: 24, fontWeight: 'bold' },
-  availabilityContainer: { marginRight: 8 },
+  availabilityContainer: { marginVertical: 8 },
   availabilityTitle: { color: '#333', fontSize: 12, fontWeight: 'bold' },
-  availabilityContent: { color: 'black', fontSize: 24, fontWeight: 'bold' },
-  durationAvailabilityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 8,
+  availabilityContent: {
+    color: 'black',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 4,
   },
   itemName: {
-    marginRight: 4,
     fontWeight: 'bold',
+    marginBottom: 2,
   },
   albumName: {
-    marginRight: 4,
-    color: 'gray',
+    color: '#333',
   },
   tagContainer: {
-    backgroundColor: '#007bff', // Blue color
+    backgroundColor: '#33BBC5',
     paddingVertical: 2,
     paddingHorizontal: 6,
+    marginLeft: 8,
     borderRadius: 16,
     alignSelf: 'flex-start',
   },
   tagText: {
-    color: 'white', // White text color
+    color: 'white',
     fontSize: 8,
     fontWeight: 'bold',
   },
@@ -374,19 +419,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     // paddingBottom: 16,
   },
-  addView: {
-    width: 48,
-    height: 48,
-    borderColor: 'lightgrey',
-    borderWidth: 1,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   saveSetlistButton: {
     flex: 1,
-    borderRadius: 8,
-    backgroundColor: '#489',
+    borderRadius: 4,
+    backgroundColor: '#614BC3',
     elevation: 4,
     ...Platform.select({ android: { overflow: 'hidden' } }),
   },
@@ -394,29 +430,9 @@ const styles = StyleSheet.create({
     padding: 18,
     paddingVertical: 12,
     fontSize: 18,
+    fontWeight: 'bold',
     alignSelf: 'center',
     color: 'white',
-  },
-  favoriteIcon: {
-    position: 'absolute',
-    right: 35,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgb(0, 182, 240)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 18,
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.34,
-    shadowRadius: 6.27,
-  },
-  backBtnContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: 32,
-    // backgroundColor: 'yellow',
   },
   imageBackground: {},
 });
