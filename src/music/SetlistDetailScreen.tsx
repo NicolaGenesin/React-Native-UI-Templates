@@ -10,6 +10,7 @@ import {
   Animated,
   Easing,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import MyPressable from '../components/MyPressable';
 import {
@@ -95,16 +96,22 @@ const SetlistDetailScreenHeader = React.memo(
               </Text>
               <View style={styles.availabilityContainer}>
                 <Text style={styles.availabilityTitle}>TRACKS AVAILABLE</Text>
-                <Text style={styles.availabilityContent}>
-                  {allSongs.filter(song => !!song.spotifyData?.id).length}/
-                  {allSongs.length}
-                  {' ~ '}
-                  {formatTime(
-                    allSongs.reduce((acc, song) => {
-                      return acc + (song.spotifyData?.duration || 1) / 1000;
-                    }, 0),
-                  )}
-                </Text>
+                {allSongs.length ? (
+                  <Text style={styles.availabilityContent}>
+                    {allSongs.filter(song => !!song.spotifyData?.id).length}/
+                    {allSongs.length}
+                    {' ~ '}
+                    {formatTime(
+                      allSongs.reduce((acc, song) => {
+                        return acc + (song.spotifyData?.duration || 1) / 1000;
+                      }, 0),
+                    )}
+                  </Text>
+                ) : (
+                  <View style={styles.loadingIndicatorTracks}>
+                    <ActivityIndicator size="small" color="black" />
+                  </View>
+                )}
               </View>
               {!!setlist.tour?.name && (
                 <Animated.Text style={styles.tour}>
@@ -238,7 +245,15 @@ const SetlistDetailScreen: React.FC = props => {
                 allSongs={allSongs}
               />
             }
-            ListFooterComponent={<View style={{ height: 80 }} />}
+            ListFooterComponent={
+              !allSongs.length ? (
+                <View style={styles.loadingIndicatorFlatlist}>
+                  <ActivityIndicator size="large" color="#85E6C5" />
+                </View>
+              ) : (
+                <View style={{ height: 80 }} />
+              )
+            }
             renderItem={({ item, index }) => {
               return (
                 <View style={styles.itemContainer}>
@@ -435,6 +450,16 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   imageBackground: {},
+  loadingIndicatorFlatlist: {
+    flex: 1,
+    marginTop: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingIndicatorTracks: {
+    marginTop: 6,
+    alignItems: 'flex-start',
+  },
 });
 
 export default SetlistDetailScreen;
