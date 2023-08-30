@@ -22,18 +22,21 @@ const SetlistsSearchScreen: React.FC = props => {
   return (
     <>
       <TopNavigation title={artist.name.toUpperCase()} />
-      <Image
-        style={{ height: 128, width: '100%' }}
-        source={{
-          uri:
-            artist?.images?.[0]?.url ||
-            'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
-        }}
-        resizeMode="cover"
-      />
+
       <FlatList
         data={setlists}
         keyExtractor={item => item.id}
+        ListHeaderComponent={
+          <Image
+            style={{ height: 128, width: '100%' }}
+            source={{
+              uri:
+                artist?.images?.[0]?.url ||
+                'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
+            }}
+            resizeMode="cover"
+          />
+        }
         renderItem={({ item }) => (
           <MyPressable
             style={{ marginTop: 8 }}

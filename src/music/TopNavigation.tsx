@@ -38,14 +38,14 @@ const TopNavigation = ({ title }: { title: string }) => {
       </View>
       <View style={styles.headerRight}>
         {/* <Icon
-            style={{ paddingRight: 8 }}
-            name="favorite-border"
-            size={25}
-            color="black"
-          /> */}
+          style={{ paddingRight: 8 }}
+          name="favorite-border"
+          size={25}
+          color="black"
+        /> */}
         <Icon
           style={{ paddingHorizontal: 8 }}
-          name="ios-share"
+          name="save-alt"
           size={25}
           color="black"
         />
