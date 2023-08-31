@@ -1,3 +1,4 @@
+import { FMSetlist } from '../design_course/model/types';
 import { retrieveTokens } from './auth';
 
 export const searchArtistsOnSpotify = async (artistName: string) => {
@@ -78,7 +79,13 @@ export const searchArtistSetlistsOnFM = async (artistName: string) => {
     if (response.ok) {
       const data = await response.json();
 
-      return data.setlist || [];
+      // Filter out data.setlist[x].artist.name.toLowerCase() !== artistName.toLowerCase()
+      // because the setlistFM API is not very good at filtering by artist name
+      const setlist = (data.setlist || []).filter((x: FMSetlist) => {
+        return x.artist.name.toLowerCase() === artistName.toLowerCase();
+      });
+
+      return setlist;
     } else {
       console.error('Error searching for setlists. Response not ok');
       return [];
