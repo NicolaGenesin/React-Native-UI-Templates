@@ -64,45 +64,29 @@ export const searchArtistSetlistsOnFM = async (
   artistName: string,
   page: number = 1,
 ) => {
-  const apiKey = 'Y9sBv3Zzx7gxuYRlgxWDSXGYPytvfzdW0Fzo';
-
   try {
     const response = await fetch(
-      `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${encodeURIComponent(
+      `https://f9b9-146-241-120-0.ngrok-free.app/api/setlists?artistName=${encodeURIComponent(
         artistName,
-      )}&p=${page}`,
+      )}&page=${page}`,
       {
         headers: {
-          'x-api-key': apiKey,
           Accept: 'application/json',
         },
       },
     );
 
     if (response.ok) {
-      const data = await response.json();
-
-      // Filter out data.setlist[x].artist.name.toLowerCase() !== artistName.toLowerCase()
-      // because the setlistFM API is not very good at filtering by artist name
-      const setlist = (data.setlist || []).filter((x: FMSetlist) => {
-        return x.artist.name.toLowerCase() === artistName.toLowerCase();
-      });
-
-      return {
-        setlist,
-        total: data.total,
-        page: data.page,
-        itemsPerPage: data.itemsPerPage,
-      };
+      return await response.json();
     } else {
       console.error('Error searching for setlists. Response not ok');
-      return [];
+      return { setlist: [], total: 0, page: 0, itemsPerPage: 0 };
     }
   } catch (error) {
-    console.error('Error searching for setlists', error);
-  }
+    console.error('Error searching for setlists.');
 
-  return [];
+    return { setlist: [], total: 0, page: 0, itemsPerPage: 0 };
+  }
 };
 
 export const savePlaylistOnSpotify = async (

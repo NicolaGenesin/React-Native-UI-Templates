@@ -27,10 +27,10 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
   });
   const artist: SpotifyArtist = props.route.params.artist;
 
-  useEffect(() => {
+  const fetchSetlists = (page: number) => {
     if (artist) {
-      searchArtistSetlistsOnFM(artist.name).then((response: any) => {
-        setSetlists(response.setlist);
+      searchArtistSetlistsOnFM(artist.name, page).then((response: any) => {
+        setSetlists(prevSetlists => [...prevSetlists, ...response.setlist]);
         setScreenState({
           itemsPerPage: response.itemsPerPage,
           page: response.page,
@@ -38,14 +38,24 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
         });
       });
     }
+  };
+
+  useEffect(() => {
+    fetchSetlists(1);
   }, [artist]);
+
+  useEffect(() => {
+    if (setlists.length < 10) {
+      fetchSetlists(screenState.page + 1);
+    }
+  }, [setlists]);
 
   return (
     <>
       <TopNavigation title={artist.name.toUpperCase()} />
       <FlatList
         data={setlists}
-        keyExtractor={item => item.id}
+        keyExtractor={(item, index) => `${item.id}-${index}`}
         renderItem={({ item, index }) => (
           <MyPressable
             style={{ marginTop: 8 }}
@@ -59,6 +69,8 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
             <SetlistsSearchScreenItem item={item} index={index} />
           </MyPressable>
         )}
+        onEndReached={() => fetchSetlists(screenState.page + 1)}
+        onEndReachedThreshold={0.1}
       />
     </>
   );
