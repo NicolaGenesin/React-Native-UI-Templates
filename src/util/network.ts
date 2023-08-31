@@ -60,14 +60,17 @@ export const searchSongsOnSpotify = async (
   }
 };
 
-export const searchArtistSetlistsOnFM = async (artistName: string) => {
+export const searchArtistSetlistsOnFM = async (
+  artistName: string,
+  page: number = 1,
+) => {
   const apiKey = 'Y9sBv3Zzx7gxuYRlgxWDSXGYPytvfzdW0Fzo';
 
   try {
     const response = await fetch(
       `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${encodeURIComponent(
         artistName,
-      )}`,
+      )}&p=${page}`,
       {
         headers: {
           'x-api-key': apiKey,
@@ -85,7 +88,12 @@ export const searchArtistSetlistsOnFM = async (artistName: string) => {
         return x.artist.name.toLowerCase() === artistName.toLowerCase();
       });
 
-      return setlist;
+      return {
+        setlist,
+        total: data.total,
+        page: data.page,
+        itemsPerPage: data.itemsPerPage,
+      };
     } else {
       console.error('Error searching for setlists. Response not ok');
       return [];

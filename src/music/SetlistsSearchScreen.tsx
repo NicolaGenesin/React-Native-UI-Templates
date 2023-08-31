@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, FlatList } from 'react-native';
+import { FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MyPressable from '../components/MyPressable';
 import { searchArtistSetlistsOnFM } from '../util/network';
@@ -16,12 +16,26 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
 ) => {
   const navigation = useNavigation<any>();
   const [setlists, setSetlists] = useState<FMSetlist[]>([]);
+  const [screenState, setScreenState] = useState<{
+    itemsPerPage: number;
+    page: number;
+    total: number;
+  }>({
+    itemsPerPage: 0,
+    page: 0,
+    total: 0,
+  });
   const artist: SpotifyArtist = props.route.params.artist;
 
   useEffect(() => {
     if (artist) {
-      searchArtistSetlistsOnFM(artist.name).then(response => {
-        setSetlists(response);
+      searchArtistSetlistsOnFM(artist.name).then((response: any) => {
+        setSetlists(response.setlist);
+        setScreenState({
+          itemsPerPage: response.itemsPerPage,
+          page: response.page,
+          total: response.total,
+        });
       });
     }
   }, [artist]);
@@ -29,21 +43,9 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
   return (
     <>
       <TopNavigation title={artist.name.toUpperCase()} />
-
       <FlatList
         data={setlists}
         keyExtractor={item => item.id}
-        // ListHeaderComponent={
-        //   <Image
-        //     style={{ height: 128, width: '100%' }}
-        //     source={{
-        //       uri:
-        //         artist?.images?.[0]?.url ||
-        //         'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
-        //     }}
-        //     resizeMode="cover"
-        //   />
-        // }
         renderItem={({ item, index }) => (
           <MyPressable
             style={{ marginTop: 8 }}
