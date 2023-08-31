@@ -8,6 +8,7 @@ import {
   Animated,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import MyPressable from '../components/MyPressable';
 import {
@@ -22,6 +23,42 @@ import { handleLogin } from '../util/auth';
 import SetlistDetailScreenItem from './SetlistDetailScreenItem';
 import SetlistDetailScreenHeader from './SetlistDetailScreenHeader';
 import moment from 'moment';
+
+const loginAndSavePlaylist = async (
+  allSongs: FMSongEntity[],
+  setlist: FMSetlist,
+  artist: SpotifyArtist,
+  playlistName: string,
+) => {
+  await handleLogin();
+
+  const spotifySongIds = allSongs
+    .map(song => song.spotifyData?.id)
+    .filter(id => !!id);
+
+  const date = moment(setlist.eventDate, 'DD-MM-YYYY').format('MMM DD, YYYY');
+
+  const isSaved = await savePlaylistOnSpotify(
+    spotifySongIds,
+    playlistName || `${artist.name} at ${setlist.venue.name}, ${date}`,
+    artist.images?.[0]?.url,
+    artist.name,
+    setlist.venue.name,
+    date,
+  );
+
+  if (isSaved) {
+    Alert.alert(
+      'Playlist Created 🙌',
+      'Check your Spotify app to listen to the playlist!',
+      [{ text: 'OK', onPress: () => console.log('OK Pressed') }],
+    );
+  } else {
+    Alert.alert('An error occurred 🤕', 'Please try again later!', [
+      { text: 'OK', onPress: () => console.log('OK Pressed') },
+    ]);
+  }
+};
 
 const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
   props: ScreenComponentProps,
@@ -100,7 +137,12 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
     <View style={{ flex: 1 }}>
       <StatusBar backgroundColor="transparent" barStyle="dark-content" />
       <View style={[styles.contentContainer]}>
-        <TopNavigation title={setlist.artist.name.toUpperCase()} />
+        <TopNavigation
+          title={setlist.artist.name.toUpperCase()}
+          actionClick={async () => {
+            await loginAndSavePlaylist(allSongs, setlist, artist, playlistName);
+          }}
+        />
         <Animated.View
           style={[styles.listContainer, { opacity: screenOpacity.current }]}
           renderToHardwareTextureAndroid
@@ -138,24 +180,11 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
           <View style={styles.saveSetlistButton}>
             <MyPressable
               onPress={async () => {
-                await handleLogin();
-
-                const spotifySongIds = allSongs
-                  .map(song => song.spotifyData?.id)
-                  .filter(id => !!id);
-
-                const date = moment(setlist.eventDate, 'DD-MM-YYYY').format(
-                  'MMM DD, YYYY',
-                );
-
-                await savePlaylistOnSpotify(
-                  spotifySongIds,
-                  playlistName ||
-                    `${artist.name} at ${setlist.venue.name}, ${date}`,
-                  artist.images?.[0]?.url,
-                  artist.name,
-                  setlist.venue.name,
-                  date,
+                await loginAndSavePlaylist(
+                  allSongs,
+                  setlist,
+                  artist,
+                  playlistName,
                 );
               }}
             >

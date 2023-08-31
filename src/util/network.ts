@@ -138,9 +138,11 @@ export const savePlaylistOnSpotify = async (
     );
 
     if (addTracksResponse.ok) {
-      console.log('Tracks added to playlist');
+      console.log('Tracks added to playlist.');
     } else {
       console.error('Error adding track to playlist');
+
+      return false;
     }
 
     // Step 3: Get Cover Image for Playlist
@@ -190,13 +192,21 @@ export const savePlaylistOnSpotify = async (
       );
 
       if (addCoverImageResponse.ok) {
-        console.log('Cover added to playlist');
+        console.log('Cover added to playlist. All good!');
+
+        return true;
       } else {
         console.error(
           'Error adding cover to playlist',
           JSON.stringify(addCoverImageResponse),
         );
+
+        // Returning true anyway, we don't want this to fail the whole process because of the cover
+        return true;
       }
+    } else {
+      // Returning true anyway, we don't want this to fail the whole process because of the cover
+      return true;
     }
   }
 

@@ -5,7 +5,13 @@ import MyPressable from '../components/MyPressable';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const TopNavigation = ({ title }: { title: string }) => {
+const TopNavigation = ({
+  title,
+  actionClick,
+}: {
+  title: string;
+  actionClick?: () => void;
+}) => {
   const window = useWindowDimensions();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -14,7 +20,7 @@ const TopNavigation = ({ title }: { title: string }) => {
     <View
       style={[
         styles.header,
-        { height: 52 + insets.top, paddingTop: insets.top },
+        { height: 44 + insets.top, paddingTop: insets.top },
       ]}
     >
       <View style={styles.headerLeft}>
@@ -43,12 +49,15 @@ const TopNavigation = ({ title }: { title: string }) => {
           size={25}
           color="black"
         /> */}
-        <Icon
-          style={{ paddingHorizontal: 8 }}
-          name="save-alt"
-          size={25}
-          color="black"
-        />
+        {actionClick && (
+          <Icon
+            style={{ paddingHorizontal: 8 }}
+            name="save-alt"
+            size={25}
+            color="black"
+            onPress={actionClick}
+          />
+        )}
       </View>
     </View>
   );
@@ -70,7 +79,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     color: 'black',
-    fontSize: 22,
+    fontSize: 18,
     fontFamily: 'WorkSans-SemiBold',
     textAlign: 'center',
   },

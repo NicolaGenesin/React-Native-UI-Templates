@@ -11,8 +11,8 @@ const ArtistSearchScreen: React.FC = () => {
   const [artists, setArtists] = useState<SpotifyArtist[]>([]);
 
   return (
-    <>
-      <View style={{ marginTop: 24 }}>
+    <View style={{ flex: 1 }}>
+      <View style={{ marginTop: 24, marginBottom: 8 }}>
         <Text style={styles.appLogo}>APP{'\n'}LOGO</Text>
         <Text style={styles.searchTitle}>SEARCH</Text>
         <TextInput
@@ -43,7 +43,7 @@ const ArtistSearchScreen: React.FC = () => {
           </MyPressable>
         )}
       />
-    </>
+    </View>
   );
 };
 

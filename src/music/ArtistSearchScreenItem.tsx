@@ -22,6 +22,13 @@ const ArtistSearchScreenItem = ({
     }).start();
   }, []);
 
+  // Capitalize first letter of each word in genres
+  const genres = item.genres
+    ?.map(genre => {
+      return genre.charAt(0).toUpperCase() + genre.slice(1);
+    })
+    .join(', ');
+
   return (
     <Animated.View style={{ ...styles.itemContainer, opacity }}>
       <Image
@@ -33,7 +40,10 @@ const ArtistSearchScreenItem = ({
         }}
         resizeMode="stretch"
       />
-      <Text style={styles.itemName}>{item.name}</Text>
+      <Animated.View style={{ flex: 1 }}>
+        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.genres}>{genres}</Text>
+      </Animated.View>
     </Animated.View>
   );
 };
@@ -42,12 +52,16 @@ const styles = StyleSheet.create({
   itemContainer: {
     flexDirection: 'row',
     paddingHorizontal: 16,
-    paddingVertical: 4,
     alignItems: 'center',
   },
   itemName: {
     fontWeight: 'bold',
+    paddingRight: 16,
     marginBottom: 2,
+    flexShrink: 1,
+  },
+  genres: {
+    fontSize: 9,
     flexShrink: 1,
   },
 });
