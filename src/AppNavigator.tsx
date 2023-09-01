@@ -72,16 +72,8 @@ export default () => {
       />
 
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainDrawer" component={DrawerNavigator} />
-
-        <Stack.Screen name="Hotel" component={HotelHomeScreen} />
-
-        <Stack.Screen
-          name="onBoarding"
-          component={IntroductionAnimationScreen}
-        />
         <Stack.Group>
-          <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} />
+          {/* <Stack.Screen name="WelcomeScreen" component={WelcomeScreen} /> */}
           <Stack.Screen
             name="ArtistSearchScreen"
             component={ArtistSearchScreen}
