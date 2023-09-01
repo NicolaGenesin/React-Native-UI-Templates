@@ -1,20 +1,51 @@
-import React, { useRef, useState } from 'react';
-import { View, FlatList, Text, TextInput, StyleSheet } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  Image,
+  FlatList,
+  Text,
+  TextInput,
+  StyleSheet,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { searchArtistsOnSpotify } from '../util/network';
 import MyPressable from '../components/MyPressable';
 import ArtistSearchScreenItem from './ArtistSearchScreenItem';
 import { SpotifyArtist } from '../design_course/model/types';
+import randomArtists from '../util/randomArtists';
 
 const ArtistSearchScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const [artists, setArtists] = useState<SpotifyArtist[]>([]);
   const latestQuery = useRef<string>('');
+
+  // change TextInput placeholder text by picking a random randomArtists every 3 seconds
+  const [randomArtistIndex, setRandomArtistIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setRandomArtistIndex(prevIndex => {
+        const newIndex = (prevIndex + 1) % randomArtists.length;
+        return newIndex;
+      });
+    }, 3000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <View style={{ marginTop: 24, marginBottom: 8 }}>
-        <Text style={styles.appLogo}>APP{'\n'}LOGO</Text>
-        <Text style={styles.searchTitle}>SEARCH</Text>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../assets/logo-black.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+        <Text style={styles.searchTitle}>SEARCH ARTIST</Text>
         <TextInput
           autoCorrect={false}
           style={styles.artistSearchInput}
@@ -49,7 +80,7 @@ const ArtistSearchScreen: React.FC = () => {
               setArtists(newArtists);
             }
           }}
-          placeholder={'Search for an Artist...'}
+          placeholder={randomArtists[randomArtistIndex]}
         />
       </View>
       <FlatList
@@ -73,24 +104,32 @@ const ArtistSearchScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  artistSearchInput: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginTop: 8,
-    marginHorizontal: 16,
-    paddingHorizontal: 8,
+  container: {
+    flex: 1,
+    backgroundColor: 'white',
   },
-  appLogo: {
-    margin: 16,
+  artistSearchInput: {
+    color: 'black',
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 24,
+    paddingBottom: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    marginHorizontal: 16,
+    marginTop: 8,
   },
   searchTitle: {
     color: '#333',
     fontSize: 12,
     fontWeight: 'bold',
     paddingHorizontal: 16,
+  },
+  logoContainer: {},
+  logo: {
+    marginLeft: 16,
+    marginVertical: 16,
+    width: 100,
+    height: 60,
   },
 });
 

@@ -32,16 +32,15 @@ const ArtistSearchScreenItem = ({
   return (
     <Animated.View style={{ ...styles.itemContainer, opacity }}>
       <Image
-        style={{ height: 40, width: 40, marginEnd: 8 }}
+        style={styles.image}
         source={{
-          uri:
-            item.images?.[0]?.url ||
-            'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
+          uri: item.images?.[0]?.url,
         }}
+        defaultSource={require('../assets/placeholder.png')}
         resizeMode="stretch"
       />
       <Animated.View style={{ flex: 1 }}>
-        <Text style={styles.itemName}>{item.name}</Text>
+        <Text style={styles.name}>{item.name}</Text>
         <Text style={styles.genres}>{genres}</Text>
       </Animated.View>
     </Animated.View>
@@ -54,12 +53,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: 'center',
   },
-  itemName: {
+  name: {
     fontWeight: 'bold',
     paddingRight: 16,
     marginBottom: 2,
     flexShrink: 1,
   },
+  image: { height: 40, width: 40, marginEnd: 8 },
   genres: {
     fontSize: 9,
     flexShrink: 1,

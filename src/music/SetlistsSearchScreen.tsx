@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FlatList } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MyPressable from '../components/MyPressable';
 import { searchArtistSetlistsOnFM } from '../util/network';
@@ -51,7 +51,7 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
   }, [setlists]);
 
   return (
-    <>
+    <View style={styles.container}>
       <TopNavigation title={artist.name.toUpperCase()} />
       <FlatList
         data={setlists}
@@ -69,11 +69,28 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
             <SetlistsSearchScreenItem item={item} index={index} />
           </MyPressable>
         )}
+        ListFooterComponent={
+          !setlists.length ? (
+            <View style={styles.loadingIndicatorFlatlist}>
+              <ActivityIndicator size="large" color="#85E6C5" />
+            </View>
+          ) : null
+        }
         onEndReached={() => fetchSetlists(screenState.page + 1)}
         onEndReachedThreshold={0.1}
       />
-    </>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { backgroundColor: 'white', flex: 1 },
+  loadingIndicatorFlatlist: {
+    flex: 1,
+    marginTop: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});
 
 export default SetlistsSearchScreen;

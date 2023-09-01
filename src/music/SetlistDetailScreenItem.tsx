@@ -28,10 +28,9 @@ const SetlistDetailScreenItem = ({
         <Image
           style={{ height: 40, width: 40, marginEnd: 8 }}
           source={{
-            uri:
-              item.spotifyData?.albumImageUrl ||
-              'https://st3.depositphotos.com/17828278/33150/v/450/depositphotos_331503262-stock-illustration-no-image-vector-symbol-missing.jpg',
+            uri: item.spotifyData?.albumImageUrl,
           }}
+          defaultSource={require('../assets/placeholder.png')}
           resizeMode="stretch"
         />
         <View style={styles.trackIndexContainer}>
