@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import MyPressable from '../components/MyPressable';
 import { searchArtistSetlistsOnFM } from '../util/network';
@@ -45,7 +51,17 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
   }, [artist]);
 
   useEffect(() => {
+    if (
+      screenState.itemsPerPage === 0 &&
+      screenState.page === 0 &&
+      screenState.total === 0
+    ) {
+      console.log('[FULL STOP] Searching more setlists...');
+      return;
+    }
+
     if (setlists.length < 10) {
+      console.log('Searching more setlists...', screenState);
       fetchSetlists(screenState.page + 1);
     }
   }, [setlists]);
@@ -77,7 +93,7 @@ const SetlistsSearchScreen: React.FC<ScreenComponentProps> = (
           ) : null
         }
         onEndReached={() => fetchSetlists(screenState.page + 1)}
-        onEndReachedThreshold={0.1}
+        onEndReachedThreshold={0.5}
       />
     </View>
   );
