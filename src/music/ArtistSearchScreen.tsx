@@ -18,6 +18,7 @@ const ArtistSearchScreen: React.FC = () => {
   const navigation = useNavigation<any>();
   const [artists, setArtists] = useState<SpotifyArtist[]>([]);
   const latestQuery = useRef<string>('');
+  const textInputRef = useRef<TextInput | null>(null); // Create a ref for the TextInput
 
   // change TextInput placeholder text by picking a random randomArtists every 3 seconds
   const [randomArtistIndex, setRandomArtistIndex] = useState<number>(0);
@@ -29,6 +30,10 @@ const ArtistSearchScreen: React.FC = () => {
         return newIndex;
       });
     }, 3000);
+
+    if (textInputRef.current) {
+      textInputRef.current.focus();
+    }
 
     return () => {
       clearInterval(intervalId);
@@ -81,6 +86,7 @@ const ArtistSearchScreen: React.FC = () => {
             }
           }}
           placeholder={randomArtists[randomArtistIndex]}
+          ref={textInputRef}
         />
       </View>
       <FlatList
