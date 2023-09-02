@@ -70,7 +70,7 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
   const artist: SpotifyArtist = props.route.params.artist;
   const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
   const [playlistName, setPlaylistName] = useState<string>('');
-  const [isSaved, setIsSaved] = useState<boolean>(false);
+  const [isSaved, setIsSaved] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
     if (artist && setlist) {
@@ -143,6 +143,8 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
         <TopNavigation
           title={setlist.artist.name.toUpperCase()}
           actionClick={async () => {
+            setIsSaved(false);
+
             const newIsSaved = await loginAndSavePlaylist(
               allSongs,
               setlist,
@@ -150,7 +152,11 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
               playlistName,
             );
 
-            setIsSaved(newIsSaved);
+            if (newIsSaved) {
+              setIsSaved(true);
+            } else {
+              setIsSaved(undefined);
+            }
           }}
         />
         <Animated.View
@@ -183,14 +189,17 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
             )}
           />
         </Animated.View>
-        {!isSaved && (
+        {(isSaved === undefined || isSaved === false) && (
           <Animated.View
             style={[styles.footerContainer]}
             renderToHardwareTextureAndroid
           >
             <View style={styles.saveSetlistButton}>
               <MyPressable
+                disabled={isSaved === false}
                 onPress={async () => {
+                  setIsSaved(false);
+
                   const newIsSaved = await loginAndSavePlaylist(
                     allSongs,
                     setlist,
@@ -198,10 +207,22 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
                     playlistName,
                   );
 
-                  setIsSaved(newIsSaved);
+                  if (newIsSaved) {
+                    setIsSaved(true);
+                  } else {
+                    setIsSaved(undefined);
+                  }
                 }}
               >
-                <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
+                {isSaved === undefined ? (
+                  <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
+                ) : (
+                  <ActivityIndicator
+                    style={styles.spinner}
+                    size="large"
+                    color="white"
+                  />
+                )}
               </MyPressable>
             </View>
           </Animated.View>
@@ -226,7 +247,7 @@ const styles = StyleSheet.create({
   listContainer: { flex: 1 },
   footerContainer: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 32,
     flexDirection: 'row',
     flex: 1,
     alignSelf: 'center',
@@ -253,6 +274,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  spinner: { paddingHorizontal: 32, paddingVertical: 8 },
 });
 
 export default SetlistDetailScreen;
