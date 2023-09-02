@@ -1,12 +1,14 @@
-import { FMSetlist } from '../design_course/model/types';
 import { retrieveTokens } from './auth';
+
+const useLiveEndpoint = true;
+const apiUrl = useLiveEndpoint
+  ? 'https://setlistify-api.vercel.app'
+  : 'https://f9b9-146-241-120-0.ngrok-free.app';
 
 export const searchArtistsOnSpotify = async (artistName: string) => {
   try {
     const response = await fetch(
-      `https://f9b9-146-241-120-0.ngrok-free.app/api/artists?name=${encodeURIComponent(
-        artistName,
-      )}`,
+      `${apiUrl}/api/artists?name=${encodeURIComponent(artistName)}`,
       {
         headers: {
           Accept: 'application/json',
@@ -32,20 +34,17 @@ export const searchSongsOnSpotify = async (
   artistName: string,
 ) => {
   try {
-    const response = await fetch(
-      'https://f9b9-146-241-120-0.ngrok-free.app/api/songs',
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          songNames,
-          artistName,
-        }),
+    const response = await fetch(`${apiUrl}/api/songs`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({
+        songNames,
+        artistName,
+      }),
+    });
 
     if (response.ok) {
       return await response.json();
@@ -66,7 +65,7 @@ export const searchArtistSetlistsOnFM = async (
 ) => {
   try {
     const response = await fetch(
-      `https://f9b9-146-241-120-0.ngrok-free.app/api/setlists?artistName=${encodeURIComponent(
+      `${apiUrl}/api/setlists?artistName=${encodeURIComponent(
         artistName,
       )}&page=${page}`,
       {
@@ -145,22 +144,19 @@ export const savePlaylistOnSpotify = async (
     }
 
     // Step 3: Get Cover Image for Playlist
-    const getCoverImageResponse = await fetch(
-      'https://f9b9-146-241-120-0.ngrok-free.app/api/overlay',
-      {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          imageUrl,
-          artistName,
-          venue,
-          date,
-        }),
+    const getCoverImageResponse = await fetch(`${apiUrl}/api/overlay`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-    );
+      body: JSON.stringify({
+        imageUrl,
+        artistName,
+        venue,
+        date,
+      }),
+    });
 
     if (getCoverImageResponse.ok) {
       console.log('Cover image created and returned to the client.');
@@ -225,22 +221,19 @@ export const getPreviewOverlay = async (
     date,
   });
 
-  const response = await fetch(
-    'https://f9b9-146-241-120-0.ngrok-free.app/api/overlay',
-    {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        imageUrl,
-        artistName,
-        venue,
-        date,
-      }),
+  const response = await fetch(`${apiUrl}/api/overlay`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
-  );
+    body: JSON.stringify({
+      imageUrl,
+      artistName,
+      venue,
+      date,
+    }),
+  });
 
   if (response.ok) {
     console.log('[Preview] Cover image created and returned to the client.');
