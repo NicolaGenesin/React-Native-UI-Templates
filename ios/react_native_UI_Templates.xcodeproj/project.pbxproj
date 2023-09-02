@@ -31,10 +31,10 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		00E356EE1AD99517003FC87E /* react_native_ui_templatesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = react_native_ui_templatesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		00E356EE1AD99517003FC87E /* Setlistify.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Setlistify.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* react_native_ui_templatesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = react_native_ui_templatesTests.m; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* react_native_ui_templates.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = react_native_ui_templates.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Setlistify.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Setlistify.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = react_native_ui_templates/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = react_native_ui_templates/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = react_native_ui_templates/Images.xcassets; sourceTree = "<group>"; };
@@ -140,8 +140,8 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* react_native_ui_templates.app */,
-				00E356EE1AD99517003FC87E /* react_native_ui_templatesTests.xctest */,
+				13B07F961A680F5B00A75B9A /* Setlistify.app */,
+				00E356EE1AD99517003FC87E /* Setlistify.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -189,7 +189,7 @@
 			);
 			name = react_native_ui_templatesTests;
 			productName = react_native_ui_templatesTests;
-			productReference = 00E356EE1AD99517003FC87E /* react_native_ui_templatesTests.xctest */;
+			productReference = 00E356EE1AD99517003FC87E /* Setlistify.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		13B07F861A680F5B00A75B9A /* react_native_ui_templates */ = {
@@ -211,7 +211,7 @@
 			);
 			name = react_native_ui_templates;
 			productName = react_native_ui_templates;
-			productReference = 13B07F961A680F5B00A75B9A /* react_native_ui_templates.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Setlistify.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -457,6 +457,7 @@
 			baseConfigurationReference = 5B7EB9410499542E8C5724F5 /* Pods-react_native_ui_templates-react_native_ui_templatesTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				DEVELOPMENT_TEAM = 35BBBD36HY;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -473,8 +474,8 @@
 					"-lc++",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = org.1911.setlistify;
+				PRODUCT_NAME = Setlistify;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/react_native_ui_templates.app/react_native_ui_templates";
 			};
 			name = Debug;
@@ -485,6 +486,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 35BBBD36HY;
 				INFOPLIST_FILE = react_native_ui_templatesTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -497,8 +499,8 @@
 					"-lc++",
 					"$(inherited)",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = org.1911.setlistify;
+				PRODUCT_NAME = Setlistify;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/react_native_ui_templates.app/react_native_ui_templates";
 			};
 			name = Release;
@@ -510,6 +512,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 35BBBD36HY;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = react_native_ui_templates/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Setlistify;
@@ -523,8 +526,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = react_native_ui_templates;
+				PRODUCT_BUNDLE_IDENTIFIER = org.1911.setlistify;
+				PRODUCT_NAME = Setlistify;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -538,6 +541,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 35BBBD36HY;
 				INFOPLIST_FILE = react_native_ui_templates/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Setlistify;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -550,8 +554,8 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = react_native_ui_templates;
+				PRODUCT_BUNDLE_IDENTIFIER = org.1911.setlistify;
+				PRODUCT_NAME = Setlistify;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
