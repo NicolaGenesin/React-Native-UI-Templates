@@ -58,6 +58,8 @@ const loginAndSavePlaylist = async (
       { text: 'OK', onPress: () => console.log('OK Pressed') },
     ]);
   }
+
+  return isSaved;
 };
 
 const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
@@ -68,6 +70,7 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
   const artist: SpotifyArtist = props.route.params.artist;
   const [allSongs, setAllSongs] = useState<FMSongEntity[]>([]);
   const [playlistName, setPlaylistName] = useState<string>('');
+  const [isSaved, setIsSaved] = useState<boolean>(false);
 
   useEffect(() => {
     if (artist && setlist) {
@@ -140,7 +143,14 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
         <TopNavigation
           title={setlist.artist.name.toUpperCase()}
           actionClick={async () => {
-            await loginAndSavePlaylist(allSongs, setlist, artist, playlistName);
+            const newIsSaved = await loginAndSavePlaylist(
+              allSongs,
+              setlist,
+              artist,
+              playlistName,
+            );
+
+            setIsSaved(newIsSaved);
           }}
         />
         <Animated.View
@@ -173,25 +183,29 @@ const SetlistDetailScreen: React.FC<ScreenComponentProps> = (
             )}
           />
         </Animated.View>
-        <Animated.View
-          style={[styles.footerContainer]}
-          renderToHardwareTextureAndroid
-        >
-          <View style={styles.saveSetlistButton}>
-            <MyPressable
-              onPress={async () => {
-                await loginAndSavePlaylist(
-                  allSongs,
-                  setlist,
-                  artist,
-                  playlistName,
-                );
-              }}
-            >
-              <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
-            </MyPressable>
-          </View>
-        </Animated.View>
+        {!isSaved && (
+          <Animated.View
+            style={[styles.footerContainer]}
+            renderToHardwareTextureAndroid
+          >
+            <View style={styles.saveSetlistButton}>
+              <MyPressable
+                onPress={async () => {
+                  const newIsSaved = await loginAndSavePlaylist(
+                    allSongs,
+                    setlist,
+                    artist,
+                    playlistName,
+                  );
+
+                  setIsSaved(newIsSaved);
+                }}
+              >
+                <Text style={styles.saveSetlistText}>SAVE SETLIST</Text>
+              </MyPressable>
+            </View>
+          </Animated.View>
+        )}
       </View>
     </View>
   );
