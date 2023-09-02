@@ -37,7 +37,7 @@ const ArtistSearchScreen: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ marginTop: 24, marginBottom: 8 }}>
+      <View style={{ marginTop: 48, marginBottom: 8 }}>
         <View style={styles.logoContainer}>
           <Image
             source={require('../assets/logo-black.png')}
